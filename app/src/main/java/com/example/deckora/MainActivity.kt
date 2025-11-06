@@ -20,6 +20,7 @@ import com.example.deckora.navigation.Screen
 import com.example.deckora.ui.screens.HomeScreen
 import com.example.deckora.ui.screens.ProfileScreen
 import com.example.deckora.ui.screens.SettingsScreen
+import com.example.deckora.ui.screens.SingUpScreen
 import com.example.deckora.viewmodel.MainViewModel
 import kotlinx.coroutines.flow.collectLatest
 
@@ -68,6 +69,9 @@ class MainActivity : ComponentActivity() {
                         }
                         composable(route = Screen.Settings.route){
                             SettingsScreen(navController = navController, viewModel = viewModel)
+                        }
+                        composable(route = Screen.SingUp.route){
+                            SingUpScreen(navController = navController, viewModel = viewModel)
                         }
                     }
 
