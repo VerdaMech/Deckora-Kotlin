@@ -14,11 +14,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedTextField
@@ -32,7 +33,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -51,7 +51,7 @@ fun SingUpScreen(
     navController: NavController,
     viewModel: MainViewModel = viewModel ()
 ){
-    val items = listOf(Screen.Home, Screen.Profile, Screen.SingUp)
+    val items = listOf(Screen.Home, Screen.Profile, Screen.Settings)
     var selectedItem by remember { mutableStateOf(2) }
 
     var username by remember { mutableStateOf("") }
@@ -59,19 +59,10 @@ fun SingUpScreen(
     var password by remember { mutableStateOf("") }
     var repeatPassword by remember { mutableStateOf("") }
 
-    var usernameError by remember { mutableStateOf<String?>(null) } // Almacena el mensaje de error
-    var emailError by remember { mutableStateOf<String?>(null) }
-    var passwordError by remember { mutableStateOf<String?>(null) }
 
-    var usernameIsTouched by remember { mutableStateOf(false) }
 
-    fun validateUsername(input: String): String? {
-        return when {
-            input.isBlank() -> "El nombre de usuario no puede estar vacío"
-            input.length < 3 -> "Debe tener al menos 3 caracteres"
-            else -> null // No hay error
-        }
-    }
+
+
 
     Scaffold(
         bottomBar = {
@@ -86,7 +77,12 @@ fun SingUpScreen(
                         label = { Text(screen.route) },
                         icon = {
                             Icon(
-                                imageVector = if(screen == Screen.Home) Icons.Default.Home else Icons.Default.Person,
+                                imageVector = when (screen) {
+                                    Screen.Home -> Icons.Default.Home
+                                    Screen.Settings -> Icons.Default.Settings
+                                    Screen.Profile -> Icons.Default.Person
+                                    else -> Icons.Default.Info
+                                },
                                 contentDescription = screen.route
                             )
                         }
@@ -117,43 +113,15 @@ fun SingUpScreen(
             Spacer(modifier = Modifier.height(32.dp))
             OutlinedTextField(
                 value = username,
-                onValueChange = {
-                    username = it
-                    if (usernameIsTouched) {
-                        usernameError = validateUsername(it)
-                    }
-                },
+                onValueChange = { username = it },
                 label = { Text("Nombre de Usuario") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-
-                isError = usernameIsTouched && usernameError != null,
-
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 32.dp, vertical = 8.dp)
-
-                    // 1. Detección de Foco: Este es el motor de la lógica
-                    .onFocusChanged { focusState ->
-                        // Si el campo PERDIÓ el foco (el evento "on blur" o "salida")
-                        if (!focusState.isFocused) {
-                            usernameIsTouched = true // 1a. Marca el campo como "tocado"
-                            usernameError = validateUsername(username) // 1b. Valida el contenido
-                        }
-                    }
             )
 
-            if (usernameIsTouched && usernameError != null) {
-                Text(
-                    text = usernameError!!,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 32.dp)
-                )
-            }
 
-            // 2. Correo
             OutlinedTextField(
                 value = email,
                 onValueChange = { email = it },
@@ -169,7 +137,7 @@ fun SingUpScreen(
                 value = password,
                 onValueChange = { password = it },
                 label = { Text("Contraseña") },
-                visualTransformation = PasswordVisualTransformation(), // Oculta el texto
+                visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -181,7 +149,7 @@ fun SingUpScreen(
                 value = repeatPassword,
                 onValueChange = { repeatPassword = it },
                 label = { Text("Repetir Contraseña") },
-                visualTransformation = PasswordVisualTransformation(), // Oculta el texto
+                visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 modifier = Modifier
                     .fillMaxWidth()

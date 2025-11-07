@@ -70,7 +70,7 @@ class MainActivity : ComponentActivity() {
                         composable(route = Screen.Settings.route){
                             SettingsScreen(navController = navController, viewModel = viewModel)
                         }
-                        composable(route = Screen.SingUp.route){
+                        composable(route = Screen.SignUp.route){
                             SingUpScreen(navController = navController, viewModel = viewModel)
                         }
                     }

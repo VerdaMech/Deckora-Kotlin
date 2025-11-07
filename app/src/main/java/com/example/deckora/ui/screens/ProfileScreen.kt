@@ -13,7 +13,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -45,7 +47,7 @@ fun ProfileScreen(
     navController: NavController,
     viewModel: MainViewModel = viewModel()
 ){
-    val items = listOf(Screen.Home, Screen.Profile, Screen.SingUp)
+    val items = listOf(Screen.Home, Screen.Profile, Screen.Settings)
     var selectedItem by remember { mutableStateOf(1) }
 
     Scaffold(
@@ -61,7 +63,12 @@ fun ProfileScreen(
                         label = { Text(screen.route) },
                         icon = {
                             Icon(
-                                imageVector = if(screen == Screen.Home) Icons.Default.Home else Icons.Default.Person,
+                                imageVector = when (screen) {
+                                    Screen.Home -> Icons.Default.Home
+                                    Screen.Settings -> Icons.Default.Settings
+                                    Screen.Profile -> Icons.Default.Person
+                                    else -> Icons.Default.Info
+                                },
                                 contentDescription = screen.route
                             )
                         }
