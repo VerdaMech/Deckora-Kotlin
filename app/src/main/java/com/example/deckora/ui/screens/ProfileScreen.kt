@@ -24,7 +24,6 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,17 +40,14 @@ import androidx.navigation.NavController
 import com.example.deckora.navigation.Screen
 import com.example.deckora.viewmodel.MainViewModel
 import com.example.deckora.R
-import com.example.deckora.viewmodel.UsuarioViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     navController: NavController,
-    viewModel: MainViewModel = viewModel(),
-    usuarioViewModel: UsuarioViewModel
+    viewModel: MainViewModel = viewModel()
 ){
-    val usuarios by usuarioViewModel.usuarios.collectAsState()
     val items = listOf(Screen.Home, Screen.Profile, Screen.Settings)
     var selectedItem by remember { mutableStateOf(1) }
 
