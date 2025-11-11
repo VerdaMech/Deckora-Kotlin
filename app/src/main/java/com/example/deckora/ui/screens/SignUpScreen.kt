@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -18,6 +20,8 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -26,6 +30,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,20 +49,44 @@ import androidx.navigation.NavController
 import com.example.deckora.R
 import com.example.deckora.navigation.Screen
 import com.example.deckora.viewmodel.MainViewModel
+import com.example.deckora.data.remote.model.Usuario
+import com.example.deckora.data.remote.AppDatabase
+import com.example.deckora.data.remote.dao.UsuarioDao
+import com.example.deckora.viewmodel.UsuarioViewModel
+
+
+
+@Composable
+fun UserItem(usuario: Usuario) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text(text = "Nombre: ${usuario.nombre}")
+            Text(text = "Correo: ${usuario.correo}")
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SingUpScreen(
     navController: NavController,
-    viewModel: MainViewModel = viewModel ()
+    viewModel: MainViewModel = viewModel (),
+    usuarioViewModel: UsuarioViewModel
 ){
     val items = listOf(Screen.Home, Screen.Profile, Screen.Settings)
     var selectedItem by remember { mutableStateOf(2) }
 
-    var username by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var repeatPassword by remember { mutableStateOf("") }
+    val usuarios by usuarioViewModel.usuarios.collectAsState()
+
+    var nombre by remember { mutableStateOf("") }
+    var correo by remember { mutableStateOf("") }
+    var clave by remember { mutableStateOf("") }
+    var repiteClave by remember { mutableStateOf("") }
 
 
 
@@ -112,8 +141,8 @@ fun SingUpScreen(
             Text("¡Crea tu usuario!")
             Spacer(modifier = Modifier.height(32.dp))
             OutlinedTextField(
-                value = username,
-                onValueChange = { username = it },
+                value = nombre,
+                onValueChange = { nombre = it },
                 label = { Text("Nombre de Usuario") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                 modifier = Modifier
@@ -123,8 +152,8 @@ fun SingUpScreen(
 
 
             OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
+                value = correo,
+                onValueChange = { correo = it },
                 label = { Text("Correo Electrónico") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 modifier = Modifier
@@ -134,8 +163,8 @@ fun SingUpScreen(
 
             // 3. Contraseña
             OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
+                value = clave,
+                onValueChange = { clave = it },
                 label = { Text("Contraseña") },
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -146,8 +175,8 @@ fun SingUpScreen(
 
             // 4. Repetir Contraseña
             OutlinedTextField(
-                value = repeatPassword,
-                onValueChange = { repeatPassword = it },
+                value = repiteClave,
+                onValueChange = { repiteClave = it },
                 label = { Text("Repetir Contraseña") },
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -156,10 +185,27 @@ fun SingUpScreen(
                     .padding(horizontal = 32.dp, vertical = 8.dp)
             )
 
-            Button(onClick = { viewModel.navigateTo(Screen.Profile) }) {
+            Button(onClick = {
+                if (nombre.isNotEmpty() && correo.isNotEmpty() && clave.isNotEmpty()
+                    && repiteClave.isNotEmpty() && clave == repiteClave) {
+                    usuarioViewModel.addUser(nombre, correo, clave)
+                    nombre = ""
+                    correo = ""
+                    clave = ""
+                    println("Usuario agrewgado")
+                } else {
+                    println("usuario no agregado")
+                }
+            }) {
                 Text("Crear Usuario")
             }
 
+            LazyColumn {
+                items(usuarios) {
+                        usuario ->
+                    UserItem(usuario = usuario)
+                }
+            }
         }
     }
 }

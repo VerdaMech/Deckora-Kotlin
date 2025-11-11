@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -23,6 +24,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,17 +41,21 @@ import androidx.navigation.NavController
 import com.example.deckora.navigation.Screen
 import com.example.deckora.viewmodel.MainViewModel
 import com.example.deckora.R
+import com.example.deckora.viewmodel.UsuarioViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     navController: NavController,
-    viewModel: MainViewModel = viewModel()
+    viewModel: MainViewModel = viewModel(),
+    usuarioViewModel: UsuarioViewModel
 ){
+    val usuarios by usuarioViewModel.usuarios.collectAsState()
     val items = listOf(Screen.Home, Screen.Profile, Screen.Settings)
     var selectedItem by remember { mutableStateOf(1) }
 
+    //barra abajo
     Scaffold(
         bottomBar = {
             NavigationBar{
@@ -76,6 +82,8 @@ fun ProfileScreen(
                 }
             }
         }
+
+        //contenido de la pag
     ){ innerPadding ->
         Column (
             modifier = Modifier
@@ -95,6 +103,16 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
             Text("¡Bienvenido al perfil!")
+
+            //Despues podemos probar poner esto en un if, tipo: Si el usuario o la cosa esta de los usuarios
+            //está vacio, entonces muestra este boton para ir a crear usuario/iniciar sesion
+            Button(
+                onClick = {
+                    viewModel.navigateTo(Screen.SignUp)
+                }
+            ) {
+                Text("Crear usuario")
+            }
         }
     }
 }
