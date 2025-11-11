@@ -10,11 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -22,19 +18,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -61,36 +51,53 @@ fun HomeScreen(
         R.drawable.lucario
     )
 
-    val items = listOf(Screen.Home, Screen.Profile, Screen.Settings)
-    var selectedItem by remember { mutableStateOf(0) }
-
-    Scaffold(
-        bottomBar = {
-            NavigationBar{
-                items.forEachIndexed { index, screen ->
-                    NavigationBarItem(
-                        selected = selectedItem == index,
-                        onClick = {
-                            selectedItem = index
-                            viewModel.navigateTo(screen)
-                        },
-                        label = { Text(screen.route) },
-                        icon = {
-                            Icon(
-                                imageVector = when (screen) {
-                                    Screen.Home -> Icons.Default.Home
-                                    Screen.Settings -> Icons.Default.Settings
-                                    Screen.Profile -> Icons.Default.Person
-                                    else -> Icons.Default.Info
-                                },
-                                contentDescription = screen.route
-                            )
-                        }
-                    )
-                }
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet {
+                Text("Menú", modifier = Modifier.padding(16.dp))
+                NavigationDrawerItem(
+                    label = {Text("Ir a Perfil")},
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        viewModel.navigateTo(Screen.Profile)
+                    }
+                )
+                NavigationDrawerItem(
+                    label = {Text("Registrarse")},
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        viewModel.navigateTo(Screen.SingUp)
+                    }
+                )
+                NavigationDrawerItem(
+                    label = {Text("Configuración")},
+                    selected = false,
+                    onClick = {
+                        scope.launch { drawerState.close() }
+                        viewModel.navigateTo(Screen.Settings)
+                    }
+                )
             }
         }
-    ){ innerPadding ->
+    ){
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("Cartas Principales") },
+                    navigationIcon = {
+                        IconButton(onClick = {
+                            scope.launch{
+                                drawerState.open() }
+                        }){
+                            Icon(Icons.Default.Menu, contentDescription = "Menú")
+                        }
+                    }
+                )
+            }
+        ){ innerPadding ->
             LazyColumn (
                 modifier = Modifier
                     .padding(innerPadding)
@@ -122,3 +129,4 @@ fun HomeScreen(
             }
         }
     }
+}

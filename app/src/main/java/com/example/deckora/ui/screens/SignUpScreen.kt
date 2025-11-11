@@ -14,9 +14,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -27,7 +25,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,19 +44,34 @@ import androidx.navigation.NavController
 import com.example.deckora.R
 import com.example.deckora.navigation.Screen
 import com.example.deckora.viewmodel.MainViewModel
-import com.example.deckora.viewmodel.RegistroViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SingUpScreen(
     navController: NavController,
-    viewModel: MainViewModel = viewModel (),
-    viewModel2: RegistroViewModel = viewModel()
+    viewModel: MainViewModel = viewModel ()
 ){
-    val items = listOf(Screen.Home, Screen.Profile, Screen.Settings)
+    val items = listOf(Screen.Home, Screen.Profile, Screen.SingUp)
     var selectedItem by remember { mutableStateOf(2) }
 
-    val estado by viewModel2.estado.collectAsState()
+    var username by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var repeatPassword by remember { mutableStateOf("") }
+
+    var usernameError by remember { mutableStateOf<String?>(null) } // Almacena el mensaje de error
+    var emailError by remember { mutableStateOf<String?>(null) }
+    var passwordError by remember { mutableStateOf<String?>(null) }
+
+    var usernameIsTouched by remember { mutableStateOf(false) }
+
+    fun validateUsername(input: String): String? {
+        return when {
+            input.isBlank() -> "El nombre de usuario no puede estar vacío"
+            input.length < 3 -> "Debe tener al menos 3 caracteres"
+            else -> null // No hay error
+        }
+    }
 
     Scaffold(
         bottomBar = {
@@ -74,13 +86,7 @@ fun SingUpScreen(
                         label = { Text(screen.route) },
                         icon = {
                             Icon(
-                                imageVector = when (screen) {
-                                    Screen.Home -> Icons.Default.Home
-                                    Screen.Settings -> Icons.Default.Settings
-                                    Screen.Profile -> Icons.Default.Person
-                                    Screen.SingUp -> Icons.Default.Person
-                                    else -> Icons.Default.Info
-                                },
+                                imageVector = if(screen == Screen.Home) Icons.Default.Home else Icons.Default.Person,
                                 contentDescription = screen.route
                             )
                         }
@@ -110,78 +116,80 @@ fun SingUpScreen(
             Text("¡Crea tu usuario!")
             Spacer(modifier = Modifier.height(32.dp))
             OutlinedTextField(
-                value = estado.nombre,
-                onValueChange = viewModel2::onNombreChange,
+                value = username,
+                onValueChange = {
+                    username = it
+                    if (usernameIsTouched) {
+                        usernameError = validateUsername(it)
+                    }
+                },
                 label = { Text("Nombre de Usuario") },
-                isError = estado.errores.nombre != null,
-                supportingText = {
-                    estado.errores.nombre?.let {
-                        Text(it, color = MaterialTheme.colorScheme.error)
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+
+                isError = usernameIsTouched && usernameError != null,
+
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 32.dp, vertical = 8.dp)
+
+                    // 1. Detección de Foco: Este es el motor de la lógica
+                    .onFocusChanged { focusState ->
+                        // Si el campo PERDIÓ el foco (el evento "on blur" o "salida")
+                        if (!focusState.isFocused) {
+                            usernameIsTouched = true // 1a. Marca el campo como "tocado"
+                            usernameError = validateUsername(username) // 1b. Valida el contenido
+                        }
                     }
-                },
+            )
+
+            if (usernameIsTouched && usernameError != null) {
+                Text(
+                    text = usernameError!!,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 32.dp)
+                )
+            }
+
+            // 2. Correo
+            OutlinedTextField(
+                value = email,
+                onValueChange = { email = it },
+                label = { Text("Correo Electrónico") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 32.dp, vertical = 8.dp)
             )
 
+            // 3. Contraseña
             OutlinedTextField(
-                value = estado.correo,
-                onValueChange = viewModel2::onCorreoChange,
-                label = { Text("Correo") },
-                isError = estado.errores.correo != null,
-                supportingText = {
-                    estado.errores.correo?.let {
-                        Text(it, color = MaterialTheme.colorScheme.error)
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 32.dp, vertical = 8.dp)
-            )
-
-            OutlinedTextField(
-                value = estado.clave,
-                onValueChange = viewModel2::onClaveChange,
+                value = password,
+                onValueChange = { password = it },
                 label = { Text("Contraseña") },
-                visualTransformation = PasswordVisualTransformation(),
-                isError = estado.errores.clave != null,
-                supportingText = {
-                    estado.errores.clave?.let {
-                        Text(it, color = MaterialTheme.colorScheme.error)
-                    }
-                },
+                visualTransformation = PasswordVisualTransformation(), // Oculta el texto
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 32.dp, vertical = 8.dp)
             )
 
+            // 4. Repetir Contraseña
             OutlinedTextField(
-                value = estado.clave,
-                onValueChange = viewModel2::onClaveChange,
+                value = repeatPassword,
+                onValueChange = { repeatPassword = it },
                 label = { Text("Repetir Contraseña") },
-                visualTransformation = PasswordVisualTransformation(),
-                isError = estado.errores.clave != null,
-                supportingText = {
-                    estado.errores.clave?.let {
-                        Text(it, color = MaterialTheme.colorScheme.error)
-                    }
-                },
+                visualTransformation = PasswordVisualTransformation(), // Oculta el texto
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 32.dp, vertical = 8.dp)
             )
 
-            Button(
-                onClick = {
-                    if(viewModel2.validarFormulario()){
-                        viewModel.navigateTo(Screen.Profile)
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 32.dp, vertical = 8.dp)
-            ) {
-                Text("Registrar")
+            Button(onClick = { viewModel.navigateTo(Screen.Profile) }) {
+                Text("Crear Usuario")
             }
 
         }
