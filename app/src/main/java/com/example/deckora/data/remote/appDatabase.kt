@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import com.example.deckora.data.remote.dao.UsuarioDao
 import com.example.deckora.data.remote.model.Usuario
 
-@Database(entities = [Usuario::class], version = 1)
+@Database(entities = [Usuario::class], version = 4)
 abstract class AppDatabase : RoomDatabase(){
     abstract fun usuarioDao(): UsuarioDao
     companion object{

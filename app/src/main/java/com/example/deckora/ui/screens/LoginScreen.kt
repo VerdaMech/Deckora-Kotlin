@@ -13,15 +13,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +28,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -42,7 +40,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -50,42 +47,20 @@ import androidx.navigation.NavController
 import com.example.deckora.R
 import com.example.deckora.navigation.Screen
 import com.example.deckora.viewmodel.MainViewModel
-import com.example.deckora.data.remote.model.Usuario
-import com.example.deckora.data.remote.AppDatabase
-import com.example.deckora.data.remote.dao.UsuarioDao
 import com.example.deckora.viewmodel.UsuarioViewModel
-
-
-
-@Composable
-fun UserItem(usuario: Usuario) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Text(text = "Nombre: ${usuario.nombre}")
-            Text(text = "Correo: ${usuario.correo}")
-        }
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SingUpScreen(
+fun LoginScreen(
     navController: NavController,
     viewModel: MainViewModel = viewModel (),
     usuarioViewModel: UsuarioViewModel
 ){
-
     usuarioViewModel.limpiarEstado()
 
     val items = listOf(Screen.Home, Screen.Profile, Screen.Settings)
     var selectedItem by remember { mutableStateOf(1) }
 
-    val usuarios by usuarioViewModel.usuarios.collectAsState()
     val estado by usuarioViewModel.estado.collectAsState()
 
 
@@ -141,10 +116,10 @@ fun SingUpScreen(
                 value = estado.nombre,
                 onValueChange = usuarioViewModel::onNombreChange,
                 label = { Text("Nombre de Usuario") },
-                isError = estado.mostrarErrores && estado.errores.nombre != null,
+                isError = estado.mostrarErrores && estado.loginErrores.nombre != null,
                 supportingText = {
                     if (estado.mostrarErrores) {
-                        estado.errores.nombre?.let {
+                        estado.loginErrores.nombre?.let {
                             Text(it, color = MaterialTheme.colorScheme.error)
                         }
                     }
@@ -153,54 +128,16 @@ fun SingUpScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 32.dp, vertical = 8.dp)
             )
-
-
-            OutlinedTextField(
-                value = estado.correo,
-                onValueChange = usuarioViewModel::onCorreoChange,
-                label = { Text("Correo") },
-                isError = estado.mostrarErrores && estado.errores.correo != null,
-                supportingText = {
-                    if (estado.mostrarErrores) {
-                        estado.errores.correo?.let {
-                            Text(it, color = MaterialTheme.colorScheme.error)
-                        }
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 32.dp, vertical = 8.dp)
-            )
-
 
             OutlinedTextField(
                 value = estado.clave,
                 onValueChange = usuarioViewModel::onClaveChange,
                 label = { Text("Contraseña") },
                 visualTransformation = PasswordVisualTransformation(),
-                isError = estado.mostrarErrores && estado.errores.clave != null,
+                isError = estado.mostrarErrores && estado.loginErrores.clave != null,
                 supportingText = {
                     if (estado.mostrarErrores) {
-                        estado.errores.clave?.let {
-                            Text(it, color = MaterialTheme.colorScheme.error)
-                        }
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 32.dp, vertical = 8.dp)
-            )
-
-            // 4. Repetir Contraseña
-            OutlinedTextField(
-                value = estado.repiteClave,
-                onValueChange = usuarioViewModel::onRepiteClaveChange,
-                label = { Text("Repetir Contraseña") },
-                visualTransformation = PasswordVisualTransformation(),
-                isError = estado.mostrarErrores && estado.errores.repiteClave!= null,
-                supportingText = {
-                    if (estado.mostrarErrores) {
-                        estado.errores.repiteClave?.let {
+                        estado.loginErrores.clave?.let {
                             Text(it, color = MaterialTheme.colorScheme.error)
                         }
                     }
@@ -211,22 +148,11 @@ fun SingUpScreen(
             )
 
             Button(onClick = {
-                if (usuarioViewModel.validarUsuario()) {
-                    usuarioViewModel.addUser()
-                    println("Usuario agregado")
-                } else {
-                    println("usuario no agregado")
-                }
+                usuarioViewModel.loginUsuario()
             }) {
-                Text("Crear Usuario")
+                Text("Iniciar Sesión")
             }
 
-            LazyColumn {
-                items(usuarios) {
-                        usuario ->
-                    UserItem(usuario = usuario)
-                }
-            }
         }
     }
 }

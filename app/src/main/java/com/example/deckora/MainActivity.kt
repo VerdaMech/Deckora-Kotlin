@@ -18,6 +18,7 @@ import com.example.deckora.data.remote.AppDatabase
 import com.example.deckora.navigation.NavigationEvent
 import com.example.deckora.navigation.Screen
 import com.example.deckora.ui.screens.HomeScreen
+import com.example.deckora.ui.screens.LoginScreen
 import com.example.deckora.ui.screens.ProfileScreen
 import com.example.deckora.ui.screens.SettingsScreen
 import com.example.deckora.ui.screens.SingUpScreen
@@ -79,6 +80,9 @@ class MainActivity : ComponentActivity() {
                         }
                         composable(route = Screen.SignUp.route){
                             SingUpScreen(navController = navController, viewModel = viewModel, usuarioViewModel = usuarioViewModel)
+                        }
+                        composable(route = Screen.Login.route){
+                            LoginScreen(navController = navController, viewModel = viewModel, usuarioViewModel = usuarioViewModel)
                         }
                     }
 

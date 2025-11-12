@@ -16,6 +16,9 @@ interface UsuarioDao {
     @Query("SELECT * FROM usuario ORDER BY id DESC")
     fun getAllUsers(): Flow<List<Usuario>>
 
+    @Query("SELECT * FROM usuario WHERE nombre = :nombre AND clave = :clave")
+    suspend fun loginUser(nombre: String, clave: String): Usuario?
+
     @Delete
     suspend fun deleteUser(usuario: Usuario)
 }

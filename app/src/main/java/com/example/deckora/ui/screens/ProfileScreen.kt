@@ -104,6 +104,13 @@ fun ProfileScreen(
             //está vacio, entonces muestra este boton para ir a crear usuario/iniciar sesion
             Button(
                 onClick = {
+                    viewModel.navigateTo(Screen.Login)
+                }
+            ) {
+                Text("Iniciar sesión")
+            }
+            Button(
+                onClick = {
                     viewModel.navigateTo(Screen.SignUp)
                 }
             ) {

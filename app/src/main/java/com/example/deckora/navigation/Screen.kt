@@ -10,6 +10,8 @@ sealed class Screen (val route:String){
 
     data object SignUp : Screen("Registrarse")
 
+    data object Login : Screen("Inicia Sesión")
+
     data class Detail(val itemId: String): Screen("detail:page/{itemId}"){
         fun buildRoute(): String {
             return route.replace("{itemId}", itemId)
