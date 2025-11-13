@@ -141,8 +141,8 @@ fun HomeScreen(
 
                     item {
                         Card (modifier = Modifier
-                            .height(250.dp)
-                            .width(150.dp),
+                            .height(350.dp)
+                            .width(250.dp),
                             shape = RoundedCornerShape(12.dp)
                         )
 
@@ -157,8 +157,8 @@ fun HomeScreen(
                                     painter = painterResource(id = imageId),
                                     contentDescription = "Imagen de la carta ${index + 1}",
                                     modifier = Modifier
-                                        .height(190.dp)
-                                        .padding(bottom = 8.dp)
+                                        .height(300.dp)
+                                        .padding(bottom = 16.dp)
                                         .clip(RoundedCornerShape(12.dp)),
                                 )
                                 Text(
