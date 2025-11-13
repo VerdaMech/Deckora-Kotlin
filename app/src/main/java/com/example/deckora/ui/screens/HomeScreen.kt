@@ -46,9 +46,9 @@ fun HomeScreen(
 
 
     val cardMap = mapOf(
-        drawable.charizard to "#1 Charizard",
-        drawable.jolteon to "#2 Jolteon",
-        drawable.lucario to "#3 Lucario"
+        drawable.charizard to "#1. Charizard",
+        drawable.jolteon to "#2. Jolteon",
+        drawable.lucario to "#3. Lucario"
     )
 
     // Lista de pantallas de la barra inferior
