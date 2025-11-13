@@ -83,9 +83,12 @@ class UsuarioViewModel(private val dao: UsuarioDao) : ViewModel() {
         }
     }
 
+
     fun validarUsuario(): Boolean{
 
         val estadoActual = _estado.value
+
+        val emailRegex = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}\$")
 
         val errores = RegistroErrores(
             nombre = when {
@@ -95,7 +98,8 @@ class UsuarioViewModel(private val dao: UsuarioDao) : ViewModel() {
             },
             correo = when {
                 estadoActual.correo.isBlank() -> "Campo obligatorio"
-                !estadoActual.correo.contains(other = "@") -> "Correo inválido, debe contener @direcciónDeSuCorreo" // 2. Formato incorrecto
+                !emailRegex.matches(estadoActual.correo) ->
+                    "Correo inválido, debe tener formato ejemplo@correo.com"
                 else -> null
             },
             clave = when {

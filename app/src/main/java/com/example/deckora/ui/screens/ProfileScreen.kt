@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
@@ -75,7 +76,7 @@ fun ProfileScreen(
                             Icon(
                                 imageVector = when (screen) {
                                     Screen.Home -> Icons.Default.Home
-                                    Screen.Camera -> Icons.Default.AddCircle
+                                    Screen.Camera -> Icons.Default.CameraAlt
                                     Screen.Profile -> Icons.Default.Person
                                     else -> Icons.Default.Info
                                 },
