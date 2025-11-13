@@ -11,17 +11,20 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHost
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.deckora.data.remote.AppDatabase
 import com.example.deckora.navigation.NavigationEvent
 import com.example.deckora.navigation.Screen
+import com.example.deckora.ui.screens.CameraScreen
 import com.example.deckora.ui.screens.HomeScreen
+import com.example.deckora.ui.screens.LoginScreen
 import com.example.deckora.ui.screens.ProfileScreen
-import com.example.deckora.ui.screens.SettingsScreen
-import com.example.deckora.ui.screens.SingUpScreen
+import com.example.deckora.ui.screens.SignUpScreen
 import com.example.deckora.viewmodel.MainViewModel
+import com.example.deckora.viewmodel.UsuarioViewModel
+import com.example.deckora.viewmodel.UsuarioViewModelFactory
 import kotlinx.coroutines.flow.collectLatest
 
 
@@ -29,9 +32,14 @@ import kotlinx.coroutines.flow.collectLatest
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val dao = AppDatabase.getDatabase(application).usuarioDao()
+        val factory = UsuarioViewModelFactory(dao)
+
         enableEdgeToEdge()
         setContent {
             val viewModel: MainViewModel = viewModel()
+            val usuarioViewModel: UsuarioViewModel = viewModel(factory = factory)
             val navController = rememberNavController()
 
             LaunchedEffect(key1 = Unit) {
@@ -65,13 +73,16 @@ class MainActivity : ComponentActivity() {
                             HomeScreen(navController = navController, viewModel = viewModel)
                         }
                         composable(route = Screen.Profile.route){
-                            ProfileScreen(navController = navController, viewModel = viewModel)
+                            ProfileScreen(navController = navController, viewModel = viewModel, usuarioViewModel = usuarioViewModel)
                         }
-                        composable(route = Screen.Settings.route){
-                            SettingsScreen(navController = navController, viewModel = viewModel)
+                        composable(route = Screen.Camera.route){
+                            CameraScreen(navController = navController, viewModel = viewModel)
                         }
                         composable(route = Screen.SignUp.route){
-                            SingUpScreen(navController = navController, viewModel = viewModel)
+                            SignUpScreen(navController = navController, viewModel = viewModel, usuarioViewModel = usuarioViewModel)
+                        }
+                        composable(route = Screen.Login.route){
+                            LoginScreen(navController = navController, viewModel = viewModel, usuarioViewModel = usuarioViewModel)
                         }
                     }
 

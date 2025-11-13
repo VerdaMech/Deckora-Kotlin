@@ -6,11 +6,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Home
@@ -23,9 +25,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,32 +42,39 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.deckora.R
 import com.example.deckora.navigation.Screen
 import com.example.deckora.viewmodel.MainViewModel
-import com.example.deckora.R
 import com.example.deckora.viewmodel.UsuarioViewModel
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(
+fun LoginScreen(
     navController: NavController,
-    viewModel: MainViewModel = viewModel(),
+    viewModel: MainViewModel = viewModel (),
     usuarioViewModel: UsuarioViewModel
-) {
-    // Obtenemos el estado del usuario desde el ViewModel
-    val estado by usuarioViewModel.estado.collectAsState()
+){
 
-    // Lista de pantallas en la barra inferior
+    //Funcion dentro del viewModel para limpiar
+    //los estados de los input a sus valores por defecto
+    usuarioViewModel.limpiarEstado()
+
+    //Lista de las pantallas, de la parte de abajo
     val items = listOf(Screen.Home, Screen.Profile, Screen.Camera)
+    //Marca una sombra en la opción seleccionada
     var selectedItem by remember { mutableStateOf(1) }
 
+    val estado by usuarioViewModel.estado.collectAsState()
+
+
+    //Barra de abajo
     Scaffold(
         bottomBar = {
-            NavigationBar {
+            NavigationBar{
                 items.forEachIndexed { index, screen ->
                     NavigationBarItem(
                         selected = selectedItem == index,
@@ -86,7 +98,8 @@ fun ProfileScreen(
                 }
             }
         }
-    ) { innerPadding ->
+    ) { innerPadding ->//Contenido de la pantalla
+                        //Imagen de usuario, campos de texto y boton
         Column(
             modifier = Modifier
                 .padding(innerPadding)
@@ -94,10 +107,9 @@ fun ProfileScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
-            // Imagen superior del perfil
             Image(
                 painter = painterResource(id = R.drawable.discord),
-                contentDescription = "Imagen de perfil",
+                contentDescription = "Imagen de la carta",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .border(width = 3.dp, color = Color.Black, shape = CircleShape)
@@ -106,44 +118,55 @@ fun ProfileScreen(
             )
 
             Spacer(modifier = Modifier.height(16.dp))
-            Text("¡Bienvenido al perfil!")
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Si el usuario está logeado
-            if (estado.estadoLogin) {
-                Text(
-                    text = "¡Hola ${estado.nombre}!",
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("Nombre de usuario: ${estado.nombre}")
-                Text("Correo: ${estado.correo}")
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Button(
-                    onClick = {
-                        usuarioViewModel.limpiarEstado()
-                        viewModel.navigateTo(Screen.Profile)
+            Text("¡Inicia Sesión!")
+            Spacer(modifier = Modifier.height(32.dp))
+            OutlinedTextField(
+                value = estado.nombre,
+                onValueChange = usuarioViewModel::onNombreChange,
+                label = { Text("Nombre de Usuario") },
+                isError = estado.mostrarErrores && estado.loginErrores.nombre != null,
+                supportingText = {
+                    if (estado.mostrarErrores) {
+                        estado.loginErrores.nombre?.let {
+                            Text(it, color = MaterialTheme.colorScheme.error)
+                        }
                     }
-                ) {
-                    Text("Cerrar sesión")
-                }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 32.dp, vertical = 8.dp)
+            )
 
-            } else {
-                Button(
-                    onClick = { viewModel.navigateTo(Screen.Login) }
-                ) {
-                    Text("Iniciar sesión")
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Button(
-                    onClick = { viewModel.navigateTo(Screen.SignUp) }
-                ) {
-                    Text("Crear usuario")
+            OutlinedTextField(
+                value = estado.clave,
+                onValueChange = usuarioViewModel::onClaveChange,
+                label = { Text("Contraseña") },
+                visualTransformation = PasswordVisualTransformation(),
+                isError = estado.mostrarErrores && estado.loginErrores.clave != null,
+                supportingText = {
+                    if (estado.mostrarErrores) {
+                        estado.loginErrores.clave?.let {
+                            Text(it, color = MaterialTheme.colorScheme.error)
+                        }
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 32.dp, vertical = 8.dp)
+            )
+
+            LaunchedEffect(key1 = estado.estadoLogin) {
+                if (estado.estadoLogin == true) {
+                    viewModel.navigateTo(Screen.Profile)
                 }
             }
+
+            Button(onClick = {
+                usuarioViewModel.loginUsuario()
+            }) {
+                Text("Iniciar Sesión")
+            }
+
         }
     }
 }

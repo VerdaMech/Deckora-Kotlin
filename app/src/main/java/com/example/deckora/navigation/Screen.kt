@@ -6,9 +6,11 @@ sealed class Screen (val route:String){
 
     data object Profile : Screen("Tú Perfil")
 
-    data object Settings : Screen("Configuracion")
+    data object Camera : Screen("Cámara")
 
     data object SignUp : Screen("Registrarse")
+
+    data object Login : Screen("Inicia Sesión")
 
     data class Detail(val itemId: String): Screen("detail:page/{itemId}"){
         fun buildRoute(): String {
