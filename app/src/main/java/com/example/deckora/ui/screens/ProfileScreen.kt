@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
@@ -48,10 +49,12 @@ fun ProfileScreen(
     navController: NavController,
     viewModel: MainViewModel = viewModel()
 ){
-    val items = listOf(Screen.Home, Screen.Profile, Screen.Settings)
+    //Lista de las pantallas, de la parte de abajo
+    val items = listOf(Screen.Home, Screen.Profile, Screen.Camera)
+    //Marca una sombra en la opción seleccionada
     var selectedItem by remember { mutableStateOf(1) }
 
-    //barra abajo
+    //Barra de abajo
     Scaffold(
         bottomBar = {
             NavigationBar{
@@ -67,7 +70,7 @@ fun ProfileScreen(
                             Icon(
                                 imageVector = when (screen) {
                                     Screen.Home -> Icons.Default.Home
-                                    Screen.Settings -> Icons.Default.Settings
+                                    Screen.Camera -> Icons.Default.AddCircle
                                     Screen.Profile -> Icons.Default.Person
                                     else -> Icons.Default.Info
                                 },

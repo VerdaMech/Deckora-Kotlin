@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
@@ -29,6 +30,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -56,15 +58,20 @@ fun LoginScreen(
     viewModel: MainViewModel = viewModel (),
     usuarioViewModel: UsuarioViewModel
 ){
+
+    //Funcion dentro del viewModel para limpiar
+    //los estados de los input a sus valores por defecto
     usuarioViewModel.limpiarEstado()
 
-    val items = listOf(Screen.Home, Screen.Profile, Screen.Settings)
+    //Lista de las pantallas, de la parte de abajo
+    val items = listOf(Screen.Home, Screen.Profile, Screen.Camera)
+    //Marca una sombra en la opción seleccionada
     var selectedItem by remember { mutableStateOf(1) }
 
     val estado by usuarioViewModel.estado.collectAsState()
 
 
-
+    //Barra de abajo
     Scaffold(
         bottomBar = {
             NavigationBar{
@@ -80,7 +87,7 @@ fun LoginScreen(
                             Icon(
                                 imageVector = when (screen) {
                                     Screen.Home -> Icons.Default.Home
-                                    Screen.Settings -> Icons.Default.Settings
+                                    Screen.Camera -> Icons.Default.AddCircle
                                     Screen.Profile -> Icons.Default.Person
                                     else -> Icons.Default.Info
                                 },
@@ -91,7 +98,8 @@ fun LoginScreen(
                 }
             }
         }
-    ) { innerPadding ->
+    ) { innerPadding ->//Contenido de la pantalla
+                        //Imagen de usuario, campos de texto y boton
         Column(
             modifier = Modifier
                 .padding(innerPadding)
@@ -146,6 +154,12 @@ fun LoginScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 32.dp, vertical = 8.dp)
             )
+
+            LaunchedEffect(key1 = estado.estadoLogin) {
+                if (estado.estadoLogin == true) {
+                    viewModel.navigateTo(Screen.Profile)
+                }
+            }
 
             Button(onClick = {
                 usuarioViewModel.loginUsuario()

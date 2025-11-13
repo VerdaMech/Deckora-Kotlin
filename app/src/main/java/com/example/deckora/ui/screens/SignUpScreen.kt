@@ -2,6 +2,7 @@ package com.example.deckora.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -13,8 +14,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
@@ -42,7 +43,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -51,18 +51,17 @@ import com.example.deckora.R
 import com.example.deckora.navigation.Screen
 import com.example.deckora.viewmodel.MainViewModel
 import com.example.deckora.data.remote.model.Usuario
-import com.example.deckora.data.remote.AppDatabase
-import com.example.deckora.data.remote.dao.UsuarioDao
 import com.example.deckora.viewmodel.UsuarioViewModel
 
 
 
 @Composable
-fun UserItem(usuario: Usuario) {
+fun UserItem(usuario: Usuario, onDelete: (Usuario) -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
+            .padding(vertical = 4.dp)
+            .clickable{onDelete(usuario)},
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
@@ -74,22 +73,27 @@ fun UserItem(usuario: Usuario) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SingUpScreen(
+fun SignUpScreen(
     navController: NavController,
     viewModel: MainViewModel = viewModel (),
     usuarioViewModel: UsuarioViewModel
 ){
 
+    //Funcion dentro del viewModel para limpiar
+    //los estados de los input a sus valores por defecto
     usuarioViewModel.limpiarEstado()
 
-    val items = listOf(Screen.Home, Screen.Profile, Screen.Settings)
+
+    //Lista de las pantallas, de la parte de abajo
+    val items = listOf(Screen.Home, Screen.Profile, Screen.Camera)
+    //Marca una sombra en la opción seleccionada
     var selectedItem by remember { mutableStateOf(1) }
 
     val usuarios by usuarioViewModel.usuarios.collectAsState()
     val estado by usuarioViewModel.estado.collectAsState()
 
 
-
+    //Barra de abajo
     Scaffold(
         bottomBar = {
             NavigationBar{
@@ -105,7 +109,7 @@ fun SingUpScreen(
                             Icon(
                                 imageVector = when (screen) {
                                     Screen.Home -> Icons.Default.Home
-                                    Screen.Settings -> Icons.Default.Settings
+                                    Screen.Camera -> Icons.Default.AddCircle
                                     Screen.Profile -> Icons.Default.Person
                                     else -> Icons.Default.Info
                                 },
@@ -116,7 +120,8 @@ fun SingUpScreen(
                 }
             }
         }
-    ) { innerPadding ->
+    ) { innerPadding -> //Contenido de la pantalla
+                        //Imagen de usuario, campos de texto y boton
         Column(
             modifier = Modifier
                 .padding(innerPadding)
@@ -214,6 +219,7 @@ fun SingUpScreen(
                 if (usuarioViewModel.validarUsuario()) {
                     usuarioViewModel.addUser()
                     println("Usuario agregado")
+                    viewModel.navigateTo(Screen.Profile)
                 } else {
                     println("usuario no agregado")
                 }
@@ -224,7 +230,7 @@ fun SingUpScreen(
             LazyColumn {
                 items(usuarios) {
                         usuario ->
-                    UserItem(usuario = usuario)
+                    UserItem(usuario = usuario, onDelete = {usuarioViewModel.deleteUser(it)})
                 }
             }
         }

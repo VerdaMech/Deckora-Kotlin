@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Menu
@@ -52,18 +53,21 @@ fun HomeScreen(
     navController: NavController,
     viewModel : MainViewModel = viewModel()
 ){
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
 
+
+    //Imagenes de las cartas más famosas
     val cardImages = listOf(
         drawable.charizard,
         drawable.jolteon,
         drawable.lucario,
     )
 
-    val items = listOf(Screen.Home, Screen.Profile, Screen.Settings)
+    //Lista de las pantallas, de la parte de abajo
+    val items = listOf(Screen.Home, Screen.Profile, Screen.Camera)
+    //Marca una sombra en la opción seleccionada
     var selectedItem by remember { mutableStateOf(0) }
 
+    //Barra de abajo
         Scaffold(
             bottomBar = {
                 NavigationBar{
@@ -79,7 +83,7 @@ fun HomeScreen(
                                 Icon(
                                     imageVector = when (screen) {
                                         Screen.Home -> Icons.Default.Home
-                                        Screen.Settings -> Icons.Default.Settings
+                                        Screen.Camera -> Icons.Default.AddCircle
                                         Screen.Profile -> Icons.Default.Person
                                         else -> Icons.Default.Info
                                     },
@@ -90,7 +94,8 @@ fun HomeScreen(
                     }
                 }
             }
-        ){ innerPadding ->
+        ){ innerPadding ->//Contenido de la pantalla
+                        //Imagenes de las cartas con su descripcion
             LazyColumn (
                 modifier = Modifier
                     .padding(innerPadding)
@@ -107,15 +112,12 @@ fun HomeScreen(
                             painter = painterResource(id = imageId),
                             contentDescription = "Imagen de la carta ${index + 1}",
                             modifier = Modifier
-                                .height(150.dp)
+                                .height(190.dp)
                                 .padding(bottom = 8.dp)
                         )
 
                         Text("Aquí debo lograr poner una carta número ${index + 1}!")
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Button(onClick = { viewModel.navigateTo(Screen.Settings) }) {
-                            Text("Agregar al carrito")
-                        }
+                        Spacer(modifier = Modifier.height(24.dp))
                     }
                 }
             }

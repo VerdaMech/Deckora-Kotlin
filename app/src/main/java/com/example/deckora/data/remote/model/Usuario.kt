@@ -16,5 +16,8 @@ data class Usuario (
     @Ignore
     val mostrarErrores : Boolean = false,
     @Ignore
-    val loginErrores : LoginErrores = LoginErrores()
+    val loginErrores : LoginErrores = LoginErrores(),
+    @Ignore
+    var estadoLogin : Boolean = false
+
 )

@@ -6,7 +6,7 @@ sealed class Screen (val route:String){
 
     data object Profile : Screen("Tú Perfil")
 
-    data object Settings : Screen("Configuracion")
+    data object Camera : Screen("Cámara")
 
     data object SignUp : Screen("Registrarse")
 

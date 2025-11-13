@@ -17,11 +17,11 @@ import androidx.navigation.compose.rememberNavController
 import com.example.deckora.data.remote.AppDatabase
 import com.example.deckora.navigation.NavigationEvent
 import com.example.deckora.navigation.Screen
+import com.example.deckora.ui.screens.CameraScreen
 import com.example.deckora.ui.screens.HomeScreen
 import com.example.deckora.ui.screens.LoginScreen
 import com.example.deckora.ui.screens.ProfileScreen
-import com.example.deckora.ui.screens.SettingsScreen
-import com.example.deckora.ui.screens.SingUpScreen
+import com.example.deckora.ui.screens.SignUpScreen
 import com.example.deckora.viewmodel.MainViewModel
 import com.example.deckora.viewmodel.UsuarioViewModel
 import com.example.deckora.viewmodel.UsuarioViewModelFactory
@@ -75,11 +75,11 @@ class MainActivity : ComponentActivity() {
                         composable(route = Screen.Profile.route){
                             ProfileScreen(navController = navController, viewModel = viewModel)
                         }
-                        composable(route = Screen.Settings.route){
-                            SettingsScreen(navController = navController, viewModel = viewModel)
+                        composable(route = Screen.Camera.route){
+                            CameraScreen(navController = navController, viewModel = viewModel)
                         }
                         composable(route = Screen.SignUp.route){
-                            SingUpScreen(navController = navController, viewModel = viewModel, usuarioViewModel = usuarioViewModel)
+                            SignUpScreen(navController = navController, viewModel = viewModel, usuarioViewModel = usuarioViewModel)
                         }
                         composable(route = Screen.Login.route){
                             LoginScreen(navController = navController, viewModel = viewModel, usuarioViewModel = usuarioViewModel)

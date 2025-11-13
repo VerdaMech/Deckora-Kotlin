@@ -40,6 +40,9 @@ class UsuarioViewModel(private val dao: UsuarioDao) : ViewModel() {
             SharingStarted.WhileSubscribed(5000),
             emptyList())
 
+    //Función para añadir usuario
+    //Omitiendo los parametros que se declaran con @Ignore
+    //Guardando solo las cosas necesarias
     fun addUser(){
         viewModelScope.launch {
             val estadoActual = _estado.value
@@ -54,6 +57,11 @@ class UsuarioViewModel(private val dao: UsuarioDao) : ViewModel() {
         }
     }
 
+    //Funcion para reestablecer los estados
+    //Normalmente la estamos aplicando una vez
+    //Logeados o cuando registramos un usuario
+    //o al inicio de las pantallas para resetear los errores
+    //Cuando cambiamos entre ellas
     fun limpiarEstado() {
         _estado.update {
             it.copy(
@@ -63,7 +71,8 @@ class UsuarioViewModel(private val dao: UsuarioDao) : ViewModel() {
                 repiteClave = "",
                 errores = RegistroErrores(),
                 mostrarErrores = false,
-                loginErrores = LoginErrores()
+                loginErrores = LoginErrores(),
+                estadoLogin = false
             )
         }
     }
@@ -149,8 +158,8 @@ class UsuarioViewModel(private val dao: UsuarioDao) : ViewModel() {
 
             if (usuarioEncontrado != null) {
                 println("Bienvenido ${usuarioEncontrado.nombre}")
+                estadoActual.estadoLogin = true
                 limpiarEstado()
-
 
             } else {
 
