@@ -20,11 +20,13 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,23 +43,26 @@ import androidx.navigation.NavController
 import com.example.deckora.navigation.Screen
 import com.example.deckora.viewmodel.MainViewModel
 import com.example.deckora.R
+import com.example.deckora.viewmodel.UsuarioViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     navController: NavController,
-    viewModel: MainViewModel = viewModel()
-){
-    //Lista de las pantallas, de la parte de abajo
+    viewModel: MainViewModel = viewModel(),
+    usuarioViewModel: UsuarioViewModel
+) {
+    // Obtenemos el estado del usuario desde el ViewModel
+    val estado by usuarioViewModel.estado.collectAsState()
+
+    // Lista de pantallas en la barra inferior
     val items = listOf(Screen.Home, Screen.Profile, Screen.Camera)
-    //Marca una sombra en la opción seleccionada
     var selectedItem by remember { mutableStateOf(1) }
 
-    //Barra de abajo
     Scaffold(
         bottomBar = {
-            NavigationBar{
+            NavigationBar {
                 items.forEachIndexed { index, screen ->
                     NavigationBarItem(
                         selected = selectedItem == index,
@@ -81,43 +86,63 @@ fun ProfileScreen(
                 }
             }
         }
-
-        //contenido de la pag
-    ){ innerPadding ->
-        Column (
+    ) { innerPadding ->
+        Column(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
-        ){
+        ) {
+            // Imagen superior del perfil
             Image(
                 painter = painterResource(id = R.drawable.discord),
-                contentDescription = "Imagen de la carta",
+                contentDescription = "Imagen de perfil",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .border(width = 3.dp, color = Color.Black, shape = CircleShape)
                     .clip(CircleShape)
-                    .size(120.dp))
+                    .size(120.dp)
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
             Text("¡Bienvenido al perfil!")
 
-            //Despues podemos probar poner esto en un if, tipo: Si el usuario o la cosa esta de los usuarios
-            //está vacio, entonces muestra este boton para ir a crear usuario/iniciar sesion
-            Button(
-                onClick = {
-                    viewModel.navigateTo(Screen.Login)
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Si el usuario está logeado
+            if (estado.estadoLogin) {
+                Text(
+                    text = "¡Hola ${estado.nombre}!",
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Nombre de usuario: ${estado.nombre}")
+                Text("Correo: ${estado.correo}")
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Button(
+                    onClick = {
+                        usuarioViewModel.limpiarEstado()
+                        viewModel.navigateTo(Screen.Profile)
+                    }
+                ) {
+                    Text("Cerrar sesión")
                 }
-            ) {
-                Text("Iniciar sesión")
-            }
-            Button(
-                onClick = {
-                    viewModel.navigateTo(Screen.SignUp)
+
+            } else {
+                Button(
+                    onClick = { viewModel.navigateTo(Screen.Login) }
+                ) {
+                    Text("Iniciar sesión")
                 }
-            ) {
-                Text("Crear usuario")
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = { viewModel.navigateTo(Screen.SignUp) }
+                ) {
+                    Text("Crear usuario")
+                }
             }
         }
     }

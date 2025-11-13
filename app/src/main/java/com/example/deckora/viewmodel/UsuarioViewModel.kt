@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.deckora.data.remote.dao.UsuarioDao
 import com.example.deckora.data.remote.model.LoginErrores
-import com.example.deckora.data.remote.model.Usuario
 import com.example.deckora.data.remote.model.RegistroErrores
+import com.example.deckora.data.remote.model.Usuario
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -143,7 +143,7 @@ class UsuarioViewModel(private val dao: UsuarioDao) : ViewModel() {
         ).isNotEmpty()
 
         if (hayErrores) {
-            _estado.update{it.copy(loginErrores = erroresLogin, mostrarErrores = true)}
+            _estado.update{it.copy(loginErrores = erroresLogin, mostrarErrores = true, estadoLogin = false)}
             return
         }
 
@@ -158,9 +158,15 @@ class UsuarioViewModel(private val dao: UsuarioDao) : ViewModel() {
 
             if (usuarioEncontrado != null) {
                 println("Bienvenido ${usuarioEncontrado.nombre}")
-                estadoActual.estadoLogin = true
-                limpiarEstado()
-
+                _estado.update {
+                    it.copy(
+                        nombre = usuarioEncontrado.nombre,
+                        correo = usuarioEncontrado.correo,
+                        clave = usuarioEncontrado.clave,
+                        estadoLogin = true,
+                        mostrarErrores = false
+                    )
+                }
             } else {
 
                 _estado.update {
@@ -169,9 +175,13 @@ class UsuarioViewModel(private val dao: UsuarioDao) : ViewModel() {
                             nombre = "Nombre de usuario incorrecto",
                             clave = "Contraseña incorrecta"
                         ),
-                        mostrarErrores = true
+                        mostrarErrores = true,
+                        estadoLogin = false,
+                        nombre = "",
+                        clave = ""
                     )
                 }
+
             }
         }
     }

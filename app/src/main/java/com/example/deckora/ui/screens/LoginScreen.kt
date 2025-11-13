@@ -118,7 +118,7 @@ fun LoginScreen(
             )
 
             Spacer(modifier = Modifier.height(16.dp))
-            Text("¡Crea tu usuario!")
+            Text("¡Inicia Sesión!")
             Spacer(modifier = Modifier.height(32.dp))
             OutlinedTextField(
                 value = estado.nombre,
