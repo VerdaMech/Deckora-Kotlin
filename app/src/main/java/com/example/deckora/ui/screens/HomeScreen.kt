@@ -11,9 +11,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -46,9 +48,9 @@ fun HomeScreen(
 
 
     val cardMap = mapOf(
-        drawable.charizard to "#1 Charizard",
-        drawable.jolteon to "#2 Jolteon",
-        drawable.lucario to "#3 Lucario"
+        drawable.charizard to "#1. Charizard",
+        drawable.jolteon to "#2. Jolteon",
+        drawable.lucario to "#3. Lucario"
     )
 
     // Lista de pantallas de la barra inferior
@@ -70,7 +72,7 @@ fun HomeScreen(
                             Icon(
                                 imageVector = when (screen) {
                                     Screen.Home -> Icons.Default.Home
-                                    Screen.Camera -> Icons.Default.AddCircle
+                                    Screen.Camera -> Icons.Default.CameraAlt
                                     Screen.Profile -> Icons.Default.Person
                                     else -> Icons.Default.Info
                                 },
@@ -96,22 +98,24 @@ fun HomeScreen(
                 val descripcion = entry.value
 
                 item {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Image(
-                            painter = painterResource(id = imageId),
-                            contentDescription = "Imagen de la carta ${index + 1}",
-                            modifier = Modifier
-                                .height(190.dp)
-                                .padding(bottom = 8.dp)
-                        )
+                    Card {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Image(
+                                painter = painterResource(id = imageId),
+                                contentDescription = "Imagen de la carta ${index + 1}",
+                                modifier = Modifier
+                                    .height(190.dp)
+                                    .padding(bottom = 8.dp)
+                            )
 
-                        Text(
-                            text = descripcion,
-                            style = MaterialTheme.typography.bodyMedium,
-                            textAlign = TextAlign.Center
-                        )
+                            Text(
+                                text = descripcion,
+                                style = MaterialTheme.typography.bodyMedium,
+                                textAlign = TextAlign.Center
+                            )
 
-                        Spacer(modifier = Modifier.height(24.dp))
+                            Spacer(modifier = Modifier.height(24.dp))
+                        }
                     }
                 }
             }
