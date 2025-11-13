@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -160,26 +161,52 @@ fun CameraScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            //Boton galeria
-            Button( onClick = { selectImageLauncher.launch("image/*") }
-            ) { Text("Agregar de galería") }
+            //BOTONES
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(150.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 600.dp)
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
 
-            //Boton camara
-            Button(
-                onClick = {
-                    val permissionCheckResult = ContextCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.CAMERA
-                    )
-                    if (permissionCheckResult == PackageManager.PERMISSION_GRANTED) {
-                        // Si el permiso ya está concedido, lanza la cámara directamente
-                        takePictureLauncher.launch(null)
-                    } else {
-                        // Si el permiso no está concedido, solicítalo
-                        permissionsLauncher.launch(Manifest.permission.CAMERA)
+                // Boton galeria
+                item {
+                    Button(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .width(200.dp),
+                        onClick = { selectImageLauncher.launch("image/*") }
+                    ) {
+                        Text("Agregar de galería")
                     }
                 }
-            ) { Text("Tomar Foto") }
+
+                // Boton camara
+                item {
+                    Button(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .width(200.dp),
+
+                        onClick = {
+                            val permissionCheckResult = ContextCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.CAMERA
+                            )
+                            if (permissionCheckResult == PackageManager.PERMISSION_GRANTED) {
+                                takePictureLauncher.launch(null)
+                            } else {
+                                permissionsLauncher.launch(Manifest.permission.CAMERA)
+                            }
+                        }
+                    ) {
+                        Text("Tomar Foto")
+                    }
+                }
+            }
 
             // Mostrar fotos abajo (Camara y galería)
             if (photos.isNotEmpty()){

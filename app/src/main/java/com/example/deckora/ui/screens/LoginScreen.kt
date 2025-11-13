@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -118,9 +119,9 @@ fun LoginScreen(
                     .size(120.dp)
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-            Text("¡Inicia Sesión!")
             Spacer(modifier = Modifier.height(32.dp))
+            Text("¡Inicia Sesión!")
+            Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
                 value = estado.nombre,
                 onValueChange = usuarioViewModel::onNombreChange,
@@ -135,7 +136,7 @@ fun LoginScreen(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 32.dp, vertical = 8.dp)
+                    .padding(horizontal = 32.dp, vertical = 2.dp)
             )
 
             OutlinedTextField(
@@ -153,7 +154,7 @@ fun LoginScreen(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 32.dp, vertical = 8.dp)
+                    .padding(horizontal = 32.dp, vertical = 2.dp)
             )
 
             LaunchedEffect(key1 = estado.estadoLogin) {
@@ -162,7 +163,9 @@ fun LoginScreen(
                 }
             }
 
-            Button(onClick = {
+            Button( modifier = Modifier
+                .width(200.dp),
+                onClick = {
                 usuarioViewModel.loginUsuario()
             }) {
                 Text("Iniciar Sesión")

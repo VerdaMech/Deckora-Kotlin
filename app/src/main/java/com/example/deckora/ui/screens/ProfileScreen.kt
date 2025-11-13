@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -117,13 +118,16 @@ fun ProfileScreen(
                     text = "¡Hola ${estado.nombre}!",
                     style = MaterialTheme.typography.titleMedium
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("Nombre de usuario: ${estado.nombre}")
+                Spacer(modifier = Modifier.height(24.dp))
+                Text("Nombre de usuario: ${estado.nombre}",
+                        modifier = Modifier
+                            .padding(0.dp, 0.dp, 0.dp, 16.dp))
                 Text("Correo: ${estado.correo}")
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Button(
+                Button( modifier = Modifier
+                    .width(200.dp),
                     onClick = {
                         usuarioViewModel.limpiarEstado()
                         viewModel.navigateTo(Screen.Profile)
@@ -133,13 +137,15 @@ fun ProfileScreen(
                 }
 
             } else {
-                Button(
+                Button( modifier = Modifier
+                    .width(200.dp),
                     onClick = { viewModel.navigateTo(Screen.Login) }
                 ) {
                     Text("Iniciar sesión")
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                Button(
+                Button( modifier = Modifier
+                    .width(200.dp),
                     onClick = { viewModel.navigateTo(Screen.SignUp) }
                 ) {
                     Text("Crear usuario")
