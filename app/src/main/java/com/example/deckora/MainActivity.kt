@@ -88,9 +88,10 @@ class MainActivity : ComponentActivity() {
                         composable(route = Screen.Carpeta.route){
                             CarpetaScreen(navController = navController, viewModel = viewModel, usuarioViewModel = usuarioViewModel)
                         }
-                        composable(route = "carpeta_detalles/{idCarpeta}", arguments = listOf(navArgument("idCarpeta") { type = NavType.LongType })) { backStackEntry ->
+                        composable(route = "carpeta_detalles/{idCarpeta}/{nombreCarpeta}", arguments = listOf(navArgument("idCarpeta") { type = NavType.LongType })) { backStackEntry ->
                             val idCarpeta = backStackEntry.arguments?.getLong("idCarpeta")!!
-                            CarpetaDetalleScreen(navController = navController, idCarpeta = idCarpeta, usuarioViewModel = usuarioViewModel, viewModel = viewModel
+                            val nombreCarpeta = backStackEntry.arguments?.getString("nombreCarpeta")!!
+                            CarpetaDetalleScreen(navController = navController,nombreCarpeta = nombreCarpeta, idCarpeta = idCarpeta, usuarioViewModel = usuarioViewModel, viewModel = viewModel
                             )
                         }
 

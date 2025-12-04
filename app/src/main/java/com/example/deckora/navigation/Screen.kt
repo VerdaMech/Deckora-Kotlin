@@ -1,5 +1,7 @@
 package com.example.deckora.navigation
 
+import android.net.Uri
+
 sealed class Screen (val route:String){
 
     data object Home : Screen("Cartas Top")
@@ -14,9 +16,12 @@ sealed class Screen (val route:String){
 
     data object Carpeta : Screen("Carpetas")
 
-    object CarpetaDetalle : Screen("carpeta_detalles/{idCarpeta}")
+    object CarpetaDetalle : Screen("carpeta_detalles/{idCarpeta}/{nombreCarpeta}")
 
-    fun carpetaDetalle(idCarpeta: Long) = "carpeta_detalles/$idCarpeta"
+
+    fun carpetaDetalle(idCarpeta: Long, nombreCarpeta: String) =
+        "carpeta_detalles/$idCarpeta/${Uri.encode(nombreCarpeta)}" //Se tiene que usar encode porque sino da error
+
 
 
     data class Detail(val itemId: String): Screen("detail:page/{itemId}"){

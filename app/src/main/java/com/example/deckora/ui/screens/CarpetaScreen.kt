@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -16,19 +18,25 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Photo
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -46,6 +54,7 @@ import androidx.navigation.NavController
 import com.example.deckora.data.model.Carpeta
 import com.example.deckora.data.model.api.CarpetaApi
 import com.example.deckora.navigation.Screen
+import com.example.deckora.viewmodel.CarpetaViewModel
 import com.example.deckora.viewmodel.MainViewModel
 import com.example.deckora.viewmodel.ResumenViewModel
 import com.example.deckora.viewmodel.UsuarioViewModel
@@ -91,25 +100,39 @@ fun CarpetaScreen(
     navController: NavController,
     usuarioViewModel: UsuarioViewModel,
     resumenViewModel: ResumenViewModel = viewModel(),
+    carpetaViewModel: CarpetaViewModel = viewModel(),
     viewModel: MainViewModel = viewModel()
-)
- {
+) {
     val usuarioId = usuarioViewModel.estado.collectAsState().value.id
     val carpetas = resumenViewModel.carpetasUsuario.collectAsState()
+
+    var mostrarDialogo by remember { mutableStateOf(false) }
+    var nombreCarpeta by remember { mutableStateOf("") }
+
     val items = listOf(Screen.Home, Screen.Profile, Screen.Camera, Screen.Carpeta)
-    //Marca una sombra en la opción seleccionada
     var selectedItem by remember { mutableStateOf(3) }
 
-
-     //Carga las carpetas (Usando el Viewmodel)
+    // Cargar carpetas al entrar
     LaunchedEffect(usuarioId) {
         if (usuarioId != null) {
             resumenViewModel.cargarCarpetasUsuario(usuarioId)
         }
     }
 
-     //Barrita abajo
+    // ---------- UI ----------
     Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { mostrarDialogo = true },
+                containerColor = MaterialTheme.colorScheme.primary
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Crear carpeta",
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
+            }
+        },
         bottomBar = {
             NavigationBar {
                 items.forEachIndexed { index, screen ->
@@ -138,29 +161,89 @@ fun CarpetaScreen(
         }
     ) { paddingValues ->
 
+
+        // ---------- POPUP CREAR CARPETA ----------
+        if (mostrarDialogo) {
+            AlertDialog(
+                onDismissRequest = { mostrarDialogo = false },
+
+                title = {
+                    Text("Crear nueva carpeta")
+                },
+
+                text = {
+                    Column {
+                        Text("Ingresa el nombre de la carpeta:")
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        OutlinedTextField(
+                            value = nombreCarpeta,
+                            onValueChange = { nombreCarpeta = it },
+                            singleLine = true,
+                            placeholder = { Text("Ej: Mis cartas legendarias") }
+                        )
+                    }
+                },
+
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            if (usuarioId != null && nombreCarpeta.isNotBlank()) {
+                                carpetaViewModel.crearCarpeta(
+                                    idUsuario = usuarioId,
+                                    nombre = nombreCarpeta,
+                                    onSuccess = {
+                                        mostrarDialogo = false
+                                        nombreCarpeta = ""
+                                        resumenViewModel.cargarCarpetasUsuario(usuarioId)
+                                    }
+                                )
+                            }
+                        }
+                    ) {
+                        Text("Crear")
+                    }
+                },
+
+                dismissButton = {
+                    TextButton(onClick = { mostrarDialogo = false }) {
+                        Text("Cancelar")
+                    }
+                }
+            )
+        }
+
+        // ---------- CONTENIDO PRINCIPAL ----------
         Column(
             modifier = Modifier
                 .padding(paddingValues)
-                .padding(16.dp)
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
         ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.primary)
+                    .padding(vertical = 35.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Mis carpetas",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            }
 
-            Text(
-                "Mis carpetas",
-                style = MaterialTheme.typography.headlineSmall
-            )
-
-            Spacer(Modifier.height(12.dp))
-
-            // Si  no hay carpetas (Usuario no logeado)
             if (carpetas.value.isEmpty()) {
                 Text("No tienes carpetas todavía")
                 return@Column
             }
 
-            // Mostrar carpetas
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
-                contentPadding = PaddingValues(8.dp),
+                contentPadding = PaddingValues(36.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -168,9 +251,12 @@ fun CarpetaScreen(
                     CarpetaItem(
                         carpeta = carpeta,
                         onClick = {
-                            // Aquí navegas a la pantalla de cartas
-                            navController.navigate("carpeta_detalles/${carpeta.id}")
-
+                            navController.navigate(
+                                Screen.CarpetaDetalle.carpetaDetalle(
+                                    idCarpeta = carpeta.id!!,
+                                    nombreCarpeta = carpeta.nombre_carpeta ?: "Sin nombre"
+                                )
+                            )
                         }
                     )
                 }
@@ -178,6 +264,7 @@ fun CarpetaScreen(
         }
     }
 }
+
 
 
 

@@ -1,6 +1,7 @@
 package com.example.deckora.ui.screens
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -53,8 +54,20 @@ import androidx.navigation.NavController
 import com.example.deckora.R
 import com.example.deckora.navigation.Screen
 import com.example.deckora.viewmodel.MainViewModel
+import java.io.File
+import java.io.FileOutputStream
 import kotlin.collections.isNotEmpty
 import kotlin.collections.plus
+
+//Funcion para usar la api de imgbb
+fun bitmapToFile(context: Context, bitmap: Bitmap): File {
+    val file = File(context.cacheDir, "temp_${System.currentTimeMillis()}.jpg")
+    val outputStream = FileOutputStream(file)
+    bitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
+    outputStream.flush()
+    outputStream.close()
+    return file
+}
 
 @Composable
 fun CameraScreen(
