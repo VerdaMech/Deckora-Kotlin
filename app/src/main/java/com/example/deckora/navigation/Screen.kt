@@ -12,7 +12,12 @@ sealed class Screen (val route:String){
 
     data object Login : Screen("Inicia Sesión")
 
-    data object Album : Screen("Carpetas")
+    data object Carpeta : Screen("Carpetas")
+
+    object CarpetaDetalle : Screen("carpeta_detalles/{idCarpeta}")
+
+    fun carpetaDetalle(idCarpeta: Long) = "carpeta_detalles/$idCarpeta"
+
 
     data class Detail(val itemId: String): Screen("detail:page/{itemId}"){
         fun buildRoute(): String {

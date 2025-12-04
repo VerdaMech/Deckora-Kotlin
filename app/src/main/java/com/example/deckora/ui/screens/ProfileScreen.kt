@@ -67,7 +67,7 @@ fun ProfileScreen(
     val estado by usuarioViewModel.estado.collectAsState()
 
     // Lista de pantallas en la barra inferior
-    val items = listOf(Screen.Home, Screen.Profile, Screen.Camera, Screen.Album)
+    val items = listOf(Screen.Home, Screen.Profile, Screen.Camera, Screen.Carpeta)
     var selectedItem by remember { mutableStateOf(1) }
     val context = LocalContext.current
     var photos by remember { mutableStateOf(listOf<Bitmap>()) }
@@ -99,7 +99,7 @@ fun ProfileScreen(
                                     Screen.Home -> Icons.Default.Home
                                     Screen.Camera -> Icons.Default.CameraAlt
                                     Screen.Profile -> Icons.Default.Person
-                                    Screen.Profile -> Icons.Default.Photo
+                                    Screen.Carpeta -> Icons.Default.Photo
                                     else -> Icons.Default.Info
                                 },
                                 contentDescription = screen.route

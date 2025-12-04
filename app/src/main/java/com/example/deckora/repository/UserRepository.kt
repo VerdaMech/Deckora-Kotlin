@@ -1,10 +1,8 @@
 package com.example.deckora.repository
 
-import android.content.Context
-import android.net.Uri
 import com.example.deckora.data.model.LoginRequest
 import com.example.deckora.data.model.LoginResponse
-import com.example.deckora.data.model.UsuarioApi
+import com.example.deckora.data.model.api.UsuarioApi
 import com.example.deckora.data.remote.ApiClient
 import retrofit2.Response
 

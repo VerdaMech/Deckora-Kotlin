@@ -68,7 +68,7 @@ fun SignUpScreen(
 
 
     //Lista de las pantallas, de la parte de abajo
-    val items = listOf(Screen.Home, Screen.Profile, Screen.Camera, Screen.Album)
+    val items = listOf(Screen.Home, Screen.Profile, Screen.Camera, Screen.Carpeta)
     //Marca una sombra en la opción seleccionada
     var selectedItem by remember { mutableStateOf(1) }
 
@@ -93,7 +93,7 @@ fun SignUpScreen(
                                     Screen.Home -> Icons.Default.Home
                                     Screen.Camera -> Icons.Default.CameraAlt
                                     Screen.Profile -> Icons.Default.Person
-                                    Screen.Profile -> Icons.Default.Photo
+                                    Screen.Carpeta -> Icons.Default.Photo
                                     else -> Icons.Default.Info
                                 },
                                 contentDescription = screen.route

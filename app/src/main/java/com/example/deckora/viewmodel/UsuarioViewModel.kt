@@ -5,13 +5,11 @@ import androidx.lifecycle.viewModelScope
 
 import com.example.deckora.data.model.LoginErrores
 import com.example.deckora.data.model.RegistroErrores
-import com.example.deckora.data.model.UsuarioApi
+import com.example.deckora.data.model.api.UsuarioApi
 import com.example.deckora.data.model.UsuarioState
 import com.example.deckora.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -125,9 +123,11 @@ class UsuarioViewModel() : ViewModel() {
         viewModelScope.launch {
             try {
                 val usuario = repository.loginUsuario(estadoActual.nombre, estadoActual.clave)
+                println("LOGIN RECIBIDO DESDE API → $usuario")
 
                 _estado.update {
                     it.copy(
+                        id = usuario.id,
                         nombre = usuario.nombre_usuario,
                         correo = usuario.correo_usuario,
                         estadoLogin = true,

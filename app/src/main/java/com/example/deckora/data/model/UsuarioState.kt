@@ -1,6 +1,7 @@
 package com.example.deckora.data.model
 
 data class UsuarioState (
+    val id: Long? = null,
     val nombre: String = "",
     val correo: String = "",
     val clave: String = "",

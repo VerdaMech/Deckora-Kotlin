@@ -1,4 +1,4 @@
-package com.example.deckora.data.model
+package com.example.deckora.data.model.api
 
 data class UsuarioApi (
     var id: Long? = 0,

@@ -11,18 +11,21 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.deckora.data.model.Carpeta
 import com.example.deckora.navigation.NavigationEvent
 import com.example.deckora.navigation.Screen
 import com.example.deckora.ui.screens.CameraScreen
+import com.example.deckora.ui.screens.CarpetaDetalleScreen
 import com.example.deckora.ui.screens.HomeScreen
 import com.example.deckora.ui.screens.LoginScreen
 import com.example.deckora.ui.screens.ProfileScreen
 import com.example.deckora.ui.screens.SignUpScreen
-import com.example.deckora.ui.screens.AlbumScreen
+import com.example.deckora.ui.screens.CarpetaScreen
 import com.example.deckora.viewmodel.MainViewModel
 import com.example.deckora.viewmodel.UsuarioViewModel
 import kotlinx.coroutines.flow.collectLatest
@@ -82,9 +85,15 @@ class MainActivity : ComponentActivity() {
                         composable(route = Screen.Login.route){
                             LoginScreen(navController = navController, viewModel = viewModel, usuarioViewModel = usuarioViewModel)
                         }
-                        composable(route = Screen.Album.route){
-                            AlbumScreen(navController = navController, viewModel = viewModel )
+                        composable(route = Screen.Carpeta.route){
+                            CarpetaScreen(navController = navController, viewModel = viewModel, usuarioViewModel = usuarioViewModel)
                         }
+                        composable(route = "carpeta_detalles/{idCarpeta}", arguments = listOf(navArgument("idCarpeta") { type = NavType.LongType })) { backStackEntry ->
+                            val idCarpeta = backStackEntry.arguments?.getLong("idCarpeta")!!
+                            CarpetaDetalleScreen(navController = navController, idCarpeta = idCarpeta, usuarioViewModel = usuarioViewModel, viewModel = viewModel
+                            )
+                        }
+
                     }
 
                 }
