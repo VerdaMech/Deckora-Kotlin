@@ -2,7 +2,7 @@ package com.example.deckora.navigation
 
 sealed class Screen (val route:String){
 
-    data object Home : Screen("Cartas Principales")
+    data object Home : Screen("Cartas Top")
 
     data object Profile : Screen("Tú Perfil")
 
@@ -11,6 +11,8 @@ sealed class Screen (val route:String){
     data object SignUp : Screen("Registrarse")
 
     data object Login : Screen("Inicia Sesión")
+
+    data object Album : Screen("Carpetas")
 
     data class Detail(val itemId: String): Screen("detail:page/{itemId}"){
         fun buildRoute(): String {

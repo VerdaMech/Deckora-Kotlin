@@ -2,10 +2,12 @@ package com.example.deckora.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.deckora.data.remote.dao.UsuarioDao
-import com.example.deckora.data.remote.model.LoginErrores
-import com.example.deckora.data.remote.model.RegistroErrores
-import com.example.deckora.data.remote.model.Usuario
+
+import com.example.deckora.data.model.LoginErrores
+import com.example.deckora.data.model.RegistroErrores
+import com.example.deckora.data.model.UsuarioApi
+import com.example.deckora.data.model.UsuarioState
+import com.example.deckora.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -13,55 +15,79 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class UsuarioViewModel(private val dao: UsuarioDao) : ViewModel() {
+class UsuarioViewModel() : ViewModel() {
 
-    private val _estado = MutableStateFlow(Usuario())
+    private val repository = UserRepository()
 
-    val estado: StateFlow<Usuario> = _estado
+    private val _estado = MutableStateFlow(UsuarioState())
+    val estado: StateFlow<UsuarioState> = _estado
 
-    fun onNombreChange(valor : String){
-        _estado.update { it.copy(nombre = valor , errores = it.errores.copy(nombre = null)) }
+    // ───────────────────────────────────────────
+    // Actualización de campos
+    // ───────────────────────────────────────────
+
+    fun onNombreChange(valor: String) {
+        _estado.update { it.copy(nombre = valor, errores = it.errores.copy(nombre = null)) }
     }
 
-    fun onCorreoChange(valor : String){
-        _estado.update { it.copy(correo = valor , errores = it.errores.copy(correo = null)) }
+    fun onCorreoChange(valor: String) {
+        _estado.update { it.copy(correo = valor, errores = it.errores.copy(correo = null)) }
     }
 
-    fun onClaveChange(valor : String){
-        _estado.update { it.copy(clave = valor , errores = it.errores.copy(clave = null)) }
+    fun onClaveChange(valor: String) {
+        _estado.update { it.copy(clave = valor, errores = it.errores.copy(clave = null)) }
     }
 
-    fun onRepiteClaveChange(valor : String){
-        _estado.update { it.copy(repiteClave = valor , errores = it.errores.copy(repiteClave = null)) }
+    fun onRepiteClaveChange(valor: String) {
+        _estado.update { it.copy(repiteClave = valor, errores = it.errores.copy(repiteClave = null)) }
     }
 
-    val usuarios = dao.getAllUsers()
-        .stateIn(viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            emptyList())
+    // ───────────────────────────────────────────
+    // Registrar usuario (POST a la API)
+    // ───────────────────────────────────────────
 
-    //Función para añadir usuario
-    //Omitiendo los parametros que se declaran con @Ignore
-    //Guardando solo las cosas necesarias
-    fun addUser(){
+    fun addUser() {
+        if (!validarUsuario()) return
+
         viewModelScope.launch {
-            val estadoActual = _estado.value
-            val nuevoUsuario = Usuario(
-                nombre = estadoActual.nombre,
-                correo = estadoActual.correo,
-                clave = estadoActual.clave
-            )
-            dao.addUser(nuevoUsuario)
 
-            limpiarEstado()
+            val estadoActual = _estado.value
+
+            val nuevoUsuarioApi = UsuarioApi(
+                id = null,
+                nombre_usuario = estadoActual.nombre,
+                correo_usuario = estadoActual.correo,
+                contrasenia_usuario = estadoActual.clave
+            )
+
+            try {
+                val creado = repository.createUsuario(nuevoUsuarioApi)
+
+                println("Usuario creado correctamente en la API → id=${creado.id}")
+
+                limpiarEstado()
+
+            } catch (e: Exception) {
+                _estado.update {
+                    it.copy(
+                        mostrarErrores = true,
+                        errores = RegistroErrores(
+                            nombre = e.message,
+                            correo = e.message,
+                            clave = e.message,
+                            repiteClave = e.message
+                        )
+                    )
+                }
+            }
+
         }
     }
 
-    //Funcion para reestablecer los estados
-    //Normalmente la estamos aplicando una vez
-    //Logeados o cuando registramos un usuario
-    //o al inicio de las pantallas para resetear los errores
-    //Cuando cambiamos entre ellas
+    // ───────────────────────────────────────────
+    // Reset de estado UI
+    // ───────────────────────────────────────────
+
     fun limpiarEstado() {
         _estado.update {
             it.copy(
@@ -77,14 +103,59 @@ class UsuarioViewModel(private val dao: UsuarioDao) : ViewModel() {
         }
     }
 
-    fun deleteUser(usuario: Usuario){
+    // ───────────────────────────────────────────
+    // Login usando API (validación básica)
+    // ───────────────────────────────────────────
+
+    fun loginUsuario() {
+        val estadoActual = _estado.value
+
+        val erroresLogin = LoginErrores(
+            nombre = if (estadoActual.nombre.isBlank()) "El nombre de usuario no puede estar vacío" else null,
+            clave = if (estadoActual.clave.isBlank()) "La contraseña no puede estar vacía" else null
+        )
+
+        if (erroresLogin.nombre != null || erroresLogin.clave != null) {
+            _estado.update {
+                it.copy(loginErrores = erroresLogin, mostrarErrores = true, estadoLogin = false)
+            }
+            return
+        }
+
         viewModelScope.launch {
-            dao.deleteUser(usuario)
+            try {
+                val usuario = repository.loginUsuario(estadoActual.nombre, estadoActual.clave)
+
+                _estado.update {
+                    it.copy(
+                        nombre = usuario.nombre_usuario,
+                        correo = usuario.correo_usuario,
+                        estadoLogin = true,
+                        mostrarErrores = false,
+                        loginErrores = LoginErrores()
+                    )
+                }
+
+            } catch (e: Exception) {
+                _estado.update {
+                    it.copy(
+                        loginErrores = LoginErrores(
+                            nombre = "Nombre o contraseña incorrectos",
+                            clave = "Verifica tus datos"
+                        ),
+                        mostrarErrores = true,
+                        estadoLogin = false
+                    )
+                }
+            }
         }
     }
 
+    // ───────────────────────────────────────────
+    // Validación de registro
+    // ───────────────────────────────────────────
 
-    fun validarUsuario(): Boolean{
+    fun validarUsuario(): Boolean {
 
         val estadoActual = _estado.value
 
@@ -93,13 +164,12 @@ class UsuarioViewModel(private val dao: UsuarioDao) : ViewModel() {
         val errores = RegistroErrores(
             nombre = when {
                 estadoActual.nombre.isBlank() -> "Campo obligatorio"
-                estadoActual.nombre.length < 6 -> "El nombre de usuario debe ser mayor a 6 caracteres"
+                estadoActual.nombre.length < 6 -> "Debe tener al menos 6 caracteres"
                 else -> null
             },
             correo = when {
                 estadoActual.correo.isBlank() -> "Campo obligatorio"
-                !emailRegex.matches(estadoActual.correo) ->
-                    "Correo inválido, debe tener formato ejemplo@correo.com"
+                !emailRegex.matches(estadoActual.correo) -> "Correo inválido"
                 else -> null
             },
             clave = when {
@@ -109,7 +179,6 @@ class UsuarioViewModel(private val dao: UsuarioDao) : ViewModel() {
             },
             repiteClave = when {
                 estadoActual.repiteClave.isBlank() -> "Campo obligatorio"
-                estadoActual.repiteClave.length < 6 -> "Debe tener al menos 6 caracteres"
                 estadoActual.repiteClave != estadoActual.clave -> "Las contraseñas no coinciden"
                 else -> null
             }
@@ -122,72 +191,8 @@ class UsuarioViewModel(private val dao: UsuarioDao) : ViewModel() {
             errores.repiteClave
         ).isNotEmpty()
 
-        _estado.update{it.copy(errores = errores, mostrarErrores = true)}
+        _estado.update { it.copy(errores = errores, mostrarErrores = true) }
 
         return !hayErrores
     }
-
-    fun loginUsuario() {
-        val estadoActual = _estado.value
-
-        val erroresLogin = LoginErrores(
-            nombre = when {
-                estadoActual.nombre.isBlank() -> "El nombre de usuario no puede estar vacío"
-                else -> null
-            },
-            clave = when {
-                estadoActual.clave.isBlank() -> "La contraseña no puede estar vacía"
-                else -> null
-            }
-        )
-
-        val hayErrores = listOfNotNull(
-            erroresLogin.nombre,
-            erroresLogin.clave,
-        ).isNotEmpty()
-
-        if (hayErrores) {
-            _estado.update{it.copy(loginErrores = erroresLogin, mostrarErrores = true, estadoLogin = false)}
-            return
-        }
-
-        viewModelScope.launch {
-
-            _estado.update { it.copy(mostrarErrores = false, loginErrores = LoginErrores()) }
-
-            val usuarioEncontrado = dao.loginUser(
-                nombre = estadoActual.nombre,
-                clave = estadoActual.clave
-            )
-
-            if (usuarioEncontrado != null) {
-                println("Bienvenido ${usuarioEncontrado.nombre}")
-                _estado.update {
-                    it.copy(
-                        nombre = usuarioEncontrado.nombre,
-                        correo = usuarioEncontrado.correo,
-                        clave = usuarioEncontrado.clave,
-                        estadoLogin = true,
-                        mostrarErrores = false
-                    )
-                }
-            } else {
-
-                _estado.update {
-                    it.copy(
-                       loginErrores = LoginErrores(
-                            nombre = "Nombre de usuario incorrecto",
-                            clave = "Contraseña incorrecta"
-                        ),
-                        mostrarErrores = true,
-                        estadoLogin = false,
-                        nombre = "",
-                        clave = ""
-                    )
-                }
-
-            }
-        }
-    }
-
 }

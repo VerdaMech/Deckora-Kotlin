@@ -2,12 +2,14 @@ package com.example.deckora.ui.screens
 
 import android.graphics.Bitmap
 import android.graphics.ImageDecoder
+import android.graphics.drawable.DrawableContainer
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,6 +25,7 @@ import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Photo
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -53,7 +56,6 @@ import com.example.deckora.viewmodel.MainViewModel
 import com.example.deckora.R
 import com.example.deckora.viewmodel.UsuarioViewModel
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
@@ -65,7 +67,7 @@ fun ProfileScreen(
     val estado by usuarioViewModel.estado.collectAsState()
 
     // Lista de pantallas en la barra inferior
-    val items = listOf(Screen.Home, Screen.Profile, Screen.Camera)
+    val items = listOf(Screen.Home, Screen.Profile, Screen.Camera, Screen.Album)
     var selectedItem by remember { mutableStateOf(1) }
     val context = LocalContext.current
     var photos by remember { mutableStateOf(listOf<Bitmap>()) }
@@ -97,6 +99,7 @@ fun ProfileScreen(
                                     Screen.Home -> Icons.Default.Home
                                     Screen.Camera -> Icons.Default.CameraAlt
                                     Screen.Profile -> Icons.Default.Person
+                                    Screen.Profile -> Icons.Default.Photo
                                     else -> Icons.Default.Info
                                 },
                                 contentDescription = screen.route
@@ -178,6 +181,7 @@ fun ProfileScreen(
                     Text("Crear usuario")
                 }
             }
+
         }
     }
 }

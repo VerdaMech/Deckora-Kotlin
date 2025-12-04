@@ -16,12 +16,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Photo
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -52,26 +51,8 @@ import androidx.navigation.NavController
 import com.example.deckora.R
 import com.example.deckora.navigation.Screen
 import com.example.deckora.viewmodel.MainViewModel
-import com.example.deckora.data.remote.model.Usuario
 import com.example.deckora.viewmodel.UsuarioViewModel
 
-
-
-@Composable
-fun UserItem(usuario: Usuario, onDelete: (Usuario) -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .clickable{onDelete(usuario)},
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Text(text = "Nombre: ${usuario.nombre}")
-            Text(text = "Correo: ${usuario.correo}")
-        }
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -87,11 +68,10 @@ fun SignUpScreen(
 
 
     //Lista de las pantallas, de la parte de abajo
-    val items = listOf(Screen.Home, Screen.Profile, Screen.Camera)
+    val items = listOf(Screen.Home, Screen.Profile, Screen.Camera, Screen.Album)
     //Marca una sombra en la opción seleccionada
     var selectedItem by remember { mutableStateOf(1) }
 
-    val usuarios by usuarioViewModel.usuarios.collectAsState()
     val estado by usuarioViewModel.estado.collectAsState()
 
 
@@ -113,6 +93,7 @@ fun SignUpScreen(
                                     Screen.Home -> Icons.Default.Home
                                     Screen.Camera -> Icons.Default.CameraAlt
                                     Screen.Profile -> Icons.Default.Person
+                                    Screen.Profile -> Icons.Default.Photo
                                     else -> Icons.Default.Info
                                 },
                                 contentDescription = screen.route
@@ -231,12 +212,6 @@ fun SignUpScreen(
                 Text("Crear Usuario")
             }
 
-            LazyColumn {
-                items(usuarios) {
-                        usuario ->
-                    UserItem(usuario = usuario, onDelete = {usuarioViewModel.deleteUser(it)})
-                }
-            }
         }
     }
 }

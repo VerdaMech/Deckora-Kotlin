@@ -1,4 +1,4 @@
-package com.example.deckora.data.remote.model
+package com.example.deckora.data.model
 
 data class RegistroErrores (
     val nombre: String? = "",

@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Photo
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -63,7 +64,7 @@ fun HomeScreen(
     )
 
     // Lista de pantallas de la barra inferior
-    val items = listOf(Screen.Home, Screen.Profile, Screen.Camera)
+    val items = listOf(Screen.Home, Screen.Profile, Screen.Camera, Screen.Album)
     var selectedItem by remember { mutableStateOf(0) }
 
     Scaffold(
@@ -84,6 +85,7 @@ fun HomeScreen(
                                     Screen.Home -> Icons.Default.Home
                                     Screen.Camera -> Icons.Default.CameraAlt
                                     Screen.Profile -> Icons.Default.Person
+                                    Screen.Album -> Icons.Default.Photo
                                     else -> Icons.Default.Info
                                 },
                                 contentDescription = screen.route
