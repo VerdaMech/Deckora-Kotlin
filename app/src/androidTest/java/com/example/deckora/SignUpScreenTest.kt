@@ -16,13 +16,14 @@ import org.junit.Test
 
 class SignUpScreenTest {
 
+
     @get:Rule
     val composeTestRule = createComposeRule()
 
 
 
-    private val dummyMainViewModel = FakeMainViewModel()
-    private val dummyUsuarioViewModel = FakeUsuarioViewModel()
+    private val dummyMainViewModel = MainViewModel()
+    private val dummyUsuarioViewModel = UsuarioViewModel()
 
 
     @Test
@@ -59,18 +60,34 @@ class SignUpScreenTest {
         composeTestRule.onNodeWithText("Crear Usuario")
             .assertIsDisplayed()
 
+        composeTestRule.onNodeWithText("Crear Usuario")
+            .performClick()
+
+
         // ----------- Barra inferior -----------
         composeTestRule.onNodeWithText("Cartas Top")
             .assertIsDisplayed()
 
+        composeTestRule.onNodeWithText("Cartas Top")
+            .performClick()
+
         composeTestRule.onNodeWithText("Tú Perfil")
             .assertIsDisplayed()
+
+        composeTestRule.onNodeWithText("Tú Perfil")
+            .performClick()
 
         composeTestRule.onNodeWithText("Cámara")
             .assertIsDisplayed()
 
+        composeTestRule.onNodeWithText("Cámara")
+            .performClick()
+
         composeTestRule.onNodeWithText("Carpetas")
             .assertIsDisplayed()
+
+        composeTestRule.onNodeWithText("Carpetas")
+            .performClick()
 
         // ----------- Interacciones ----------
         composeTestRule.onNodeWithText("Nombre de Usuario")

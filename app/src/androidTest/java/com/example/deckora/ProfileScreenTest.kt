@@ -4,15 +4,14 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performTextInput
 import androidx.navigation.compose.rememberNavController
-import com.example.deckora.ui.screens.LoginScreen
+import com.example.deckora.ui.screens.ProfileScreen
 import com.example.deckora.viewmodel.MainViewModel
 import com.example.deckora.viewmodel.UsuarioViewModel
 import org.junit.Rule
 import org.junit.Test
 
-class LoginScreenTest {
+class ProfileScreenTest {
 
     @get:Rule
     val composeTestRule = createComposeRule()
@@ -21,12 +20,12 @@ class LoginScreenTest {
     private val dummyUsuarioViewModel = UsuarioViewModel()
 
     @Test
-    fun testVistaLoginScreen() {
+    fun testVistaProfileScreen() {
 
         composeTestRule.setContent {
             val navController = rememberNavController()
 
-            LoginScreen(
+            ProfileScreen(
                 navController = navController,
                 viewModel = dummyMainViewModel,
                 usuarioViewModel = dummyUsuarioViewModel
@@ -34,21 +33,20 @@ class LoginScreenTest {
         }
 
         // ----------- Texto principal -----------
-        composeTestRule.onNodeWithText("¡Inicia Sesión!")
-            .assertIsDisplayed()
-
-        // ----------- Campos -----------
-        composeTestRule.onNodeWithText("Nombre de Usuario")
-            .assertIsDisplayed()
-
-        composeTestRule.onNodeWithText("Contraseña")
+        composeTestRule.onNodeWithText("¡Bienvenido al perfil!")
             .assertIsDisplayed()
 
         // ----------- Botón -----------
-        composeTestRule.onNodeWithText("Iniciar Sesión")
+        composeTestRule.onNodeWithText("Iniciar sesión")
             .assertIsDisplayed()
 
-        composeTestRule.onNodeWithText("Iniciar Sesión")
+        composeTestRule.onNodeWithText("Crear usuario")
+            .assertIsDisplayed()
+
+        composeTestRule.onNodeWithText("Iniciar sesión")
+            .performClick()
+
+        composeTestRule.onNodeWithText("Crear usuario")
             .performClick()
 
         // ----------- Barra inferior -----------
@@ -75,16 +73,5 @@ class LoginScreenTest {
 
         composeTestRule.onNodeWithText("Carpetas")
             .performClick()
-
-        // ----------- Interacciones ----------
-        composeTestRule.onNodeWithText("Nombre de Usuario")
-            .performTextInput("Vicente")
-
-        composeTestRule.onNodeWithText("Contraseña")
-            .performTextInput("123456")
-
-        // ----------- Confirmar que aparece lo ingresado ----------
-        composeTestRule.onNodeWithText("Vicente")
-            .assertIsDisplayed()
     }
 }

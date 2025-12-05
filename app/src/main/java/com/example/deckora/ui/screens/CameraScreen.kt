@@ -83,61 +83,66 @@ fun CameraScreen(
     viewModel: MainViewModel,
     usuarioViewModel: UsuarioViewModel, //Obtener el usuario
     resumenViewModel: ResumenViewModel = viewModel(), //Cargar carpetas (Para poder elegir una en elcombobox)
-    cartaViewModel: CartaViewModel = viewModel() //Usa la funcion de crear cartas
+    cartaViewModel: CartaViewModel = viewModel() ,//Usa la funcion de crear cartas
+    isTest: Boolean = false
 ) {
-    val context = LocalContext.current
-    //Necesario para el resumen
-    val usuarioId = usuarioViewModel.estado.collectAsState().value.id
-    val carpetas = resumenViewModel.carpetasUsuario.collectAsState()
 
-    // Necesarios para crear la carta en si
-    var fotoSeleccionada by remember { mutableStateOf<Bitmap?>(null) }
-    var nombre by remember { mutableStateOf("") }
-    var estado by remember { mutableStateOf("") }
-    var descripcion by remember { mutableStateOf("") }
-    var carpetaSeleccionada by remember { mutableStateOf<Long?>(null) }
-    var categoriaSeleccionada by remember { mutableStateOf(1) } // Magic default
+    if (!isTest) {
+        val context = LocalContext.current
+        //Necesario para el resumen
+        val usuarioId = usuarioViewModel.estado.collectAsState().value.id
+        val carpetas = resumenViewModel.carpetasUsuario.collectAsState()
 
-    //Estado para el popup de crear carta
-    var mostrarDialogo by remember { mutableStateOf(false) }
+        // Necesarios para crear la carta en si
+        var fotoSeleccionada by remember { mutableStateOf<Bitmap?>(null) }
+        var nombre by remember { mutableStateOf("") }
+        var estado by remember { mutableStateOf("") }
+        var descripcion by remember { mutableStateOf("") }
+        var carpetaSeleccionada by remember { mutableStateOf<Long?>(null) }
+        var categoriaSeleccionada by remember { mutableStateOf(1) } // Magic default
 
-    // Cargar carpetas por el usuario id
-    LaunchedEffect(usuarioId) {
-        usuarioId?.let { resumenViewModel.cargarCarpetasUsuario(it) }
-    }
+        //Estado para el popup de crear carta
+        var mostrarDialogo by remember { mutableStateOf(false) }
+
+        // Cargar carpetas por el usuario id
+        LaunchedEffect(usuarioId) {
+            usuarioId?.let { resumenViewModel.cargarCarpetasUsuario(it) }
+        }
 
 // Launcher de galeria
-    val selectImageLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.GetContent()
-    ) { uri ->
-        if (uri != null) {
-            val source = ImageDecoder.createSource(context.contentResolver, uri)
-            val bmp = ImageDecoder.decodeBitmap(source)
+        val selectImageLauncher = rememberLauncherForActivityResult(
+            ActivityResultContracts.GetContent()
+        ) { uri ->
+            if (uri != null) {
+                val source = ImageDecoder.createSource(context.contentResolver, uri)
+                val bmp = ImageDecoder.decodeBitmap(source)
 
-            fotoSeleccionada = bmp
-            mostrarDialogo = true
+                fotoSeleccionada = bmp
+                mostrarDialogo = true
+            }
         }
-    }
 
 // Launcher camara
-    val takePictureLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.TakePicturePreview()
-    ) { bmp ->
-        if (bmp != null) {
-            fotoSeleccionada = bmp
-            mostrarDialogo = true
+        val takePictureLauncher = rememberLauncherForActivityResult(
+            ActivityResultContracts.TakePicturePreview()
+        ) { bmp ->
+            if (bmp != null) {
+                fotoSeleccionada = bmp
+                mostrarDialogo = true
+            }
+        }
+
+        val permissionsLauncher = rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { granted ->
+            if (granted) {
+                takePictureLauncher.launch(null)
+            } else {
+                Toast.makeText(context, "Se necesita permiso de cámara", Toast.LENGTH_SHORT).show()  //<- Esto pasa si nohay permiso
+            }
         }
     }
 
-    val permissionsLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        if (granted) {
-            takePictureLauncher.launch(null)
-        } else {
-            Toast.makeText(context, "Se necesita permiso de cámara", Toast.LENGTH_SHORT).show()  //<- Esto pasa si nohay permiso
-        }
-    }
 
     //NAvbar
     Scaffold(
