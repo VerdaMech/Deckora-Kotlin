@@ -12,6 +12,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -31,13 +32,21 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Photo
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,206 +59,305 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.deckora.R
+import com.example.deckora.data.model.api.CarpetaApi
 import com.example.deckora.navigation.Screen
+import com.example.deckora.viewmodel.CartaViewModel
 import com.example.deckora.viewmodel.MainViewModel
+import com.example.deckora.viewmodel.ResumenViewModel
+import com.example.deckora.viewmodel.UsuarioViewModel
 import java.io.File
 import java.io.FileOutputStream
 import kotlin.collections.isNotEmpty
 import kotlin.collections.plus
-
-//Funcion para usar la api de imgbb
-fun bitmapToFile(context: Context, bitmap: Bitmap): File {
-    val file = File(context.cacheDir, "temp_${System.currentTimeMillis()}.jpg")
-    val outputStream = FileOutputStream(file)
-    bitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
-    outputStream.flush()
-    outputStream.close()
-    return file
-}
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CameraScreen(
     navController: NavController,
-    viewModel: MainViewModel
+    viewModel: MainViewModel,
+    usuarioViewModel: UsuarioViewModel,
+    resumenViewModel: ResumenViewModel = viewModel(),
+    cartaViewModel: CartaViewModel = viewModel()
 ) {
-
-    // Lista de imagenes para la camara
-    val imagenesCamara = listOf(
-        R.drawable.m1,
-        R.drawable.m2,
-        R.drawable.m3,
-        R.drawable.m4,
-        R.drawable.m5,
-        R.drawable.m6
-    )
-
-    //funcion camara
-    var photos by remember { mutableStateOf(listOf<Bitmap>()) }
-    var imageUri by remember { mutableStateOf<Uri?>(null) }
-    var bitmap by remember { mutableStateOf<Bitmap?>(null) }
-    var fileUri by remember { mutableStateOf<Uri?>(null) }
     val context = LocalContext.current
 
-    //Tomar foto con la camara (guarda una foto de la lista de arriba, pero sale el monito verde)
-    val takePictureLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.TakePicturePreview()
-    ) {
-        val randomImageRes = imagenesCamara.random() // selecciona una carta al azar
-        val randomBitmap = BitmapFactory.decodeResource(context.resources, randomImageRes)
+    val usuarioId = usuarioViewModel.estado.collectAsState().value.id
+    val carpetas = resumenViewModel.carpetasUsuario.collectAsState()
 
-        photos = photos + randomBitmap
+    // Imagen seleccionada para crear carta
+    var fotoSeleccionada by remember { mutableStateOf<Bitmap?>(null) }
+
+    // Campos del popup
+    var nombre by remember { mutableStateOf("") }
+    var estado by remember { mutableStateOf("") }
+    var descripcion by remember { mutableStateOf("") }
+
+    var carpetaSeleccionada by remember { mutableStateOf<Long?>(null) }
+    var categoriaSeleccionada by remember { mutableStateOf(1) } // Magic default
+
+    var mostrarDialogo by remember { mutableStateOf(false) }
+
+    // Cargar carpetas del usuario
+    LaunchedEffect(usuarioId) {
+        usuarioId?.let { resumenViewModel.cargarCarpetasUsuario(it) }
     }
 
-    //Abrir camara
-    val permissionsLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
-            // Permiso concedido, lanza la cámara
-            takePictureLauncher.launch(null)
-        } else {
-            // Permiso denegado
-            Toast.makeText(context, "Se necesita permiso de camara para acceder a la funcion.", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-
-
-    //Abrir galería
+// Launcher de galeria
     val selectImageLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
+        ActivityResultContracts.GetContent()
     ) { uri ->
         if (uri != null) {
             val source = ImageDecoder.createSource(context.contentResolver, uri)
             val bmp = ImageDecoder.decodeBitmap(source)
-            photos = photos + bmp
+
+            fotoSeleccionada = bmp
+            mostrarDialogo = true
         }
     }
 
+// Launcher camara
+    val takePictureLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.TakePicturePreview()
+    ) { bmp ->
+        if (bmp != null) {
+            fotoSeleccionada = bmp
+            mostrarDialogo = true   // ← Ahora sí se abre el popup
+        }
+    }
 
+    val permissionsLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            takePictureLauncher.launch(null)
+        } else {
+            Toast.makeText(context, "Se necesita permiso de cámara", Toast.LENGTH_SHORT).show()
+        }
+    }
 
-    //Lista de las pantallas, de la parte de abajo
-    val items = listOf(Screen.Home, Screen.Profile, Screen.Camera, Screen.Carpeta)
-    //Marca una sombra en la opción seleccionada
-    var selectedItem by remember { mutableStateOf(2) }
-
-    //Barra de abajo
+    // --------------------------
+    //   INTERFAZ PRINCIPAL
+    // --------------------------
     Scaffold(
         bottomBar = {
             NavigationBar {
-                items.forEachIndexed { index, screen ->
-                    NavigationBarItem(
-                        selected = selectedItem == index,
-                        onClick = {
-                            selectedItem = index
-                            viewModel.navigateTo(screen)
-                        },
-                        label = { Text(screen.route) },
-                        icon = {
-                            Icon(
-                                imageVector = when (screen) {
-                                    Screen.Home -> Icons.Default.Home
-                                    Screen.Camera -> Icons.Default.CameraAlt
-                                    Screen.Profile -> Icons.Default.Person
-                                    Screen.Carpeta -> Icons.Default.Photo
-                                    else -> Icons.Default.Info
-                                },
-                                contentDescription = screen.route
-                            )
-                        }
-                    )
-                }
+                listOf(Screen.Home, Screen.Profile, Screen.Camera, Screen.Carpeta)
+                    .forEachIndexed { index, screen ->
+                        NavigationBarItem(
+                            selected = index == 2,
+                            onClick = { viewModel.navigateTo(screen) },
+                            label = { Text(screen.route) },
+                            icon = {
+                                Icon(
+                                    imageVector = when (screen) {
+                                        Screen.Home -> Icons.Default.Home
+                                        Screen.Camera -> Icons.Default.CameraAlt
+                                        Screen.Profile -> Icons.Default.Person
+                                        Screen.Carpeta -> Icons.Default.Photo
+                                        else -> Icons.Default.Info
+                                    },
+                                    contentDescription = null
+                                )
+                            }
+                        )
+                    }
             }
         }
-        //contenido pagina
-    ) { innerPadding ->
+    ) { padding ->
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding),
-            verticalArrangement = Arrangement.Center,
+                .padding(padding),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = "¡Agrega una nueva foto a tu colección!")
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Text("¡Agrega una nueva carta!")
 
-            //BOTONES
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(150.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 600.dp)
-                    .padding(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+            Spacer(Modifier.height(20.dp))
 
-                // Boton galeria
-                item {
-                    Button(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .width(200.dp),
-                        onClick = { selectImageLauncher.launch("image/*") }
-                    ) {
-                        Text("Agregar de galería")
-                    }
-                }
-
-                // Boton camara
-                item {
-                    Button(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .width(200.dp),
-
-                        onClick = {
-                            val permissionCheckResult = ContextCompat.checkSelfPermission(
-                                context,
-                                Manifest.permission.CAMERA
-                            )
-                            if (permissionCheckResult == PackageManager.PERMISSION_GRANTED) {
-                                takePictureLauncher.launch(null)
-                            } else {
-                                permissionsLauncher.launch(Manifest.permission.CAMERA)
-                            }
-                        }
-                    ) {
-                        Text("Tomar Foto")
-                    }
-                }
+            Button(onClick = { selectImageLauncher.launch("image/*") }) {
+                Text("Elegir desde la galería")
             }
 
-            // Mostrar fotos abajo (Camara y galería)
-            if (photos.isNotEmpty()){
-                Text("")
-                Spacer(modifier = Modifier.height(8.dp))
+            Spacer(Modifier.height(12.dp))
 
-                LazyVerticalGrid(
-                    columns = GridCells.Adaptive(150.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 600.dp)
-                        .padding(8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(photos.size) { index ->
-                        Image(
-                            bitmap = photos[index].asImageBitmap(),
-                            contentDescription = "Foto ${index + 1}",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(300.dp)
-                                .clip(RoundedCornerShape(15.dp)),
-                            contentScale = ContentScale.Fit
-                        )
+            Button(
+                onClick = {
+                    val permission = ContextCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.CAMERA
+                    )
+
+                    if (permission == PackageManager.PERMISSION_GRANTED) {
+                        takePictureLauncher.launch(null)
+                    } else {
+                        permissionsLauncher.launch(Manifest.permission.CAMERA)
                     }
                 }
+            ) {
+                Text("Tomar Foto")
+            }
+        }
+    }
+
+    // --------------------------
+    //       POPUP CREAR CARTA
+    // --------------------------
+    if (mostrarDialogo && fotoSeleccionada != null) {
+
+        AlertDialog(
+            onDismissRequest = { mostrarDialogo = false },
+
+            title = { Text("Crear nueva carta") },
+
+            text = {
+
+                Column {
+
+                    Image(
+                        bitmap = fotoSeleccionada!!.asImageBitmap(),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(180.dp)
+                            .clip(RoundedCornerShape(12.dp)),
+                        contentScale = ContentScale.Fit
+                    )
+
+                    Spacer(Modifier.height(10.dp))
+
+                    TextField(value = nombre, onValueChange = { nombre = it }, label = { Text("Nombre") })
+                    Spacer(Modifier.height(8.dp))
+
+                    TextField(value = estado, onValueChange = { estado = it }, label = { Text("Estado") })
+                    Spacer(Modifier.height(8.dp))
+
+                    TextField(value = descripcion, onValueChange = { descripcion = it }, label = { Text("Descripción") })
+                    Spacer(Modifier.height(16.dp))
+
+                    Text("Carpeta:")
+                    DropdownMenuCarpetas(
+                        carpetas = carpetas.value,
+                        carpetaSeleccionada = carpetaSeleccionada,
+                        onSelect = { carpetaSeleccionada = it }
+                    )
+
+                    Spacer(Modifier.height(16.dp))
+
+                    Text("Categoría:")
+                    DropdownMenuCategorias(
+                        categoriaSeleccionada = categoriaSeleccionada,
+                        onSelect = { categoriaSeleccionada = it }
+                    )
+                }
+            },
+
+            confirmButton = {
+                TextButton(onClick = {
+
+                    if (usuarioId != null && carpetaSeleccionada != null) {
+
+                        cartaViewModel.crearCartaConImagen(
+                            context = context,
+                            bitmap = fotoSeleccionada!!,
+                            nombre = nombre,
+                            estado = estado,
+                            descripcion = descripcion,
+                            carpetaId = carpetaSeleccionada!!,
+                            usuarioId = usuarioId,
+                            onSuccess = {
+                                mostrarDialogo = false
+                                Toast.makeText(context, "Carta creada!", Toast.LENGTH_SHORT).show()
+                            },
+                            onError = {
+                                Toast.makeText(context, it, Toast.LENGTH_LONG).show()
+                            }
+                        )
+                    }
+
+                }) {
+                    Text("Crear")
+                }
+            },
+
+            dismissButton = {
+                TextButton(onClick = { mostrarDialogo = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+}
+
+//Comboboxes
+@Composable
+fun DropdownMenuCarpetas(
+    carpetas: List<CarpetaApi>,
+    carpetaSeleccionada: Long?,
+    onSelect: (Long) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box {
+        Button(onClick = { expanded = true }) {
+            Text(carpetaSeleccionada?.toString() ?: "Seleccionar carpeta")
+        }
+
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            carpetas.forEach { carpeta ->
+                DropdownMenuItem(
+                    text = { Text(carpeta.nombre_carpeta ?: "Sin nombre") },
+                    onClick = {
+                        onSelect(carpeta.id!!)
+                        expanded = false
+                    }
+                )
             }
         }
     }
 }
+
+@Composable
+fun DropdownMenuCategorias(
+    categoriaSeleccionada: Int?,   // ID de categoría seleccionado
+    onSelect: (Int) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    // Lista de categorías con ID
+    val categorias = listOf(
+        1 to "Magic",
+        2 to "Pokémon"
+    )
+
+    Box {
+        Button(onClick = { expanded = true }) {
+            Text(
+                categorias.find { it.first == categoriaSeleccionada }?.second
+                    ?: "Seleccionar categoría"
+            )
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            categorias.forEach { (id, nombre) ->
+                DropdownMenuItem(
+                    text = { Text(nombre) },
+                    onClick = {
+                        onSelect(id)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+
+

@@ -1,30 +1,33 @@
 package com.example.deckora.repository
 
-import com.example.deckora.data.remote.ApiClient
+import com.example.deckora.data.remote.ImgBBClient
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
 
 class ImagenRepository {
 
-    private val api = ApiClient.service
-    private val apiKey = "TU_API_KEY_AQUI"
+    private val apiKey = "aff03dcf85d4fcc6a50e5b74ee5759f4"
 
-    suspend fun subirImagen(file: File): String {
-        val request = file.asRequestBody("image/*".toMediaType())
-        val multipart = MultipartBody.Part.createFormData(
-            "image",
-            file.name,
-            request
+    suspend fun subirImagenSuspend(file: File): String {
+
+        val requestBody = file.asRequestBody("image/*".toMediaType())
+        val filePart = MultipartBody.Part.createFormData("image", file.name, requestBody)
+
+        val keyPart = apiKey.toRequestBody("text/plain".toMediaType())
+
+        val response = ImgBBClient.api.uploadImage(
+            image = filePart,
+            apiKey = keyPart
         )
 
-        val response = api.subirImagen(apiKey, multipart)
-
-        if (response.success) {
-            return response.data.url
-        } else {
-            throw Exception("Error subiendo imagen")
-        }
+        return response.data.url
     }
 }
+
+
+
+
+

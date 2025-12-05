@@ -5,11 +5,12 @@ import com.example.deckora.data.model.LoginRequest
 import com.example.deckora.data.model.LoginResponse
 import com.example.deckora.data.model.api.CarpetaApi
 import com.example.deckora.data.model.api.CartaApi
-import com.example.deckora.data.model.api.ImgBBApi
+import com.example.deckora.data.model.api.ImgBBResponse
 import com.example.deckora.data.model.api.UsuarioApi
 import com.example.deckora.data.model.api.UsuarioWrapper
 import com.example.deckora.data.model.api.ResumenApi
 import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -104,13 +105,4 @@ interface ApiService {
     suspend fun getCartasByCarpeta(
         @Path("idCarpeta") idCarpeta: Long
     ): List<CartaApi>
-
-    //Imagenes usando imgbb
-    @Multipart
-    @POST("https://api.imgbb.com/1/upload")
-    suspend fun subirImagen(
-        @Query("key") apiKey: String,
-        @Part image: MultipartBody.Part
-    ): ImgBBApi
-
 }
