@@ -16,7 +16,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.deckora.data.model.Carpeta
 import com.example.deckora.navigation.NavigationEvent
 import com.example.deckora.navigation.Screen
 import com.example.deckora.ui.screens.CameraScreen
@@ -76,12 +75,7 @@ class MainActivity : ComponentActivity() {
                         composable(route = Screen.Profile.route){
                             ProfileScreen(navController = navController, viewModel = viewModel, usuarioViewModel = usuarioViewModel)
                         }
-                        composable(route = Screen.Camera.route) {
-                            CameraScreen(
-                                navController = navController,
-                                viewModel = viewModel,
-                                usuarioViewModel = usuarioViewModel
-                            )
+                        composable(route = Screen.Camera.route) { CameraScreen(navController = navController, viewModel = viewModel, usuarioViewModel = usuarioViewModel)
                         }
 
                         composable(route = Screen.SignUp.route){

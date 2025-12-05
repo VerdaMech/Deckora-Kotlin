@@ -51,7 +51,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.deckora.data.model.Carpeta
 import com.example.deckora.data.model.api.CarpetaApi
 import com.example.deckora.navigation.Screen
 import com.example.deckora.viewmodel.CarpetaViewModel
@@ -119,7 +118,6 @@ fun CarpetaScreen(
         }
     }
 
-    // ---------- UI ----------
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
@@ -161,8 +159,6 @@ fun CarpetaScreen(
         }
     ) { paddingValues ->
 
-
-        // ---------- POPUP CREAR CARPETA ----------
         if (mostrarDialogo) {
             AlertDialog(
                 onDismissRequest = { mostrarDialogo = false },
@@ -180,7 +176,7 @@ fun CarpetaScreen(
                             value = nombreCarpeta,
                             onValueChange = { nombreCarpeta = it },
                             singleLine = true,
-                            placeholder = { Text("Ej: Mis cartas legendarias") }
+                            placeholder = { Text("Ej: Pikachu waton") }
                         )
                     }
                 },
@@ -213,7 +209,7 @@ fun CarpetaScreen(
             )
         }
 
-        // ---------- CONTENIDO PRINCIPAL ----------
+    //Pagina
         Column(
             modifier = Modifier
                 .padding(paddingValues)
@@ -222,6 +218,7 @@ fun CarpetaScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
+            //Separador morado
             Box(
                 modifier = Modifier
                     .fillMaxWidth()

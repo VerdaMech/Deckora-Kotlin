@@ -14,6 +14,8 @@ import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 
+
+//Necesario para mandar la imagen con la api de imgBB
 fun bitmapToFile(context: Context, bitmap: Bitmap): File {
     val file = File(context.cacheDir, "temp_${System.currentTimeMillis()}.jpg")
     val outputStream = FileOutputStream(file)
@@ -54,6 +56,7 @@ class CartaViewModel : ViewModel() {
         onError: (String) -> Unit
     ) = viewModelScope.launch {
 
+        //Lo de imgBB
         try {
             // 1 → convertir bitmap a archivo temporal
             val file = bitmapToFile(context, bitmap)

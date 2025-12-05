@@ -11,9 +11,11 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -38,6 +40,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -78,29 +81,27 @@ import kotlin.collections.plus
 fun CameraScreen(
     navController: NavController,
     viewModel: MainViewModel,
-    usuarioViewModel: UsuarioViewModel,
-    resumenViewModel: ResumenViewModel = viewModel(),
-    cartaViewModel: CartaViewModel = viewModel()
+    usuarioViewModel: UsuarioViewModel, //Obtener el usuario
+    resumenViewModel: ResumenViewModel = viewModel(), //Cargar carpetas (Para poder elegir una en elcombobox)
+    cartaViewModel: CartaViewModel = viewModel() //Usa la funcion de crear cartas
 ) {
     val context = LocalContext.current
-
+    //Necesario para el resumen
     val usuarioId = usuarioViewModel.estado.collectAsState().value.id
     val carpetas = resumenViewModel.carpetasUsuario.collectAsState()
 
-    // Imagen seleccionada para crear carta
+    // Necesarios para crear la carta en si
     var fotoSeleccionada by remember { mutableStateOf<Bitmap?>(null) }
-
-    // Campos del popup
     var nombre by remember { mutableStateOf("") }
     var estado by remember { mutableStateOf("") }
     var descripcion by remember { mutableStateOf("") }
-
     var carpetaSeleccionada by remember { mutableStateOf<Long?>(null) }
     var categoriaSeleccionada by remember { mutableStateOf(1) } // Magic default
 
+    //Estado para el popup de crear carta
     var mostrarDialogo by remember { mutableStateOf(false) }
 
-    // Cargar carpetas del usuario
+    // Cargar carpetas por el usuario id
     LaunchedEffect(usuarioId) {
         usuarioId?.let { resumenViewModel.cargarCarpetasUsuario(it) }
     }
@@ -124,7 +125,7 @@ fun CameraScreen(
     ) { bmp ->
         if (bmp != null) {
             fotoSeleccionada = bmp
-            mostrarDialogo = true   // ← Ahora sí se abre el popup
+            mostrarDialogo = true
         }
     }
 
@@ -134,13 +135,11 @@ fun CameraScreen(
         if (granted) {
             takePictureLauncher.launch(null)
         } else {
-            Toast.makeText(context, "Se necesita permiso de cámara", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Se necesita permiso de cámara", Toast.LENGTH_SHORT).show()  //<- Esto pasa si nohay permiso
         }
     }
 
-    // --------------------------
-    //   INTERFAZ PRINCIPAL
-    // --------------------------
+    //NAvbar
     Scaffold(
         bottomBar = {
             NavigationBar {
@@ -167,49 +166,79 @@ fun CameraScreen(
             }
         }
     ) { padding ->
-
+    //Pagina
         Column(
             modifier = Modifier
+                .padding(padding)
                 .fillMaxSize()
-                .padding(padding),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .background(MaterialTheme.colorScheme.background),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
         ) {
+            // Separador morado
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.primary)
+                    .padding(vertical = 35.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Subir una foto",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            }
 
+            Spacer(Modifier.height(300.dp))
             Text("¡Agrega una nueva carta!")
 
             Spacer(Modifier.height(20.dp))
 
-            Button(onClick = { selectImageLauncher.launch("image/*") }) {
-                Text("Elegir desde la galería")
-            }
-
-            Spacer(Modifier.height(12.dp))
-
-            Button(
-                onClick = {
-                    val permission = ContextCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.CAMERA
-                    )
-
-                    if (permission == PackageManager.PERMISSION_GRANTED) {
-                        takePictureLauncher.launch(null)
-                    } else {
-                        permissionsLauncher.launch(Manifest.permission.CAMERA)
-                    }
-                }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Text("Tomar Foto")
+
+                Button(
+                    onClick = { selectImageLauncher.launch("image/*") },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 8.dp)
+                ) {
+                    Text("Galería")
+                }
+
+                Button(
+                    onClick = {
+                        val permission = ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.CAMERA
+                        )
+
+                        if (permission == PackageManager.PERMISSION_GRANTED) {
+                            takePictureLauncher.launch(null)
+                        } else {
+                            permissionsLauncher.launch(Manifest.permission.CAMERA)
+                        }
+                    },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 8.dp)
+                ) {
+                    Text("Tomar Foto")
+                }
             }
         }
     }
 
-    // --------------------------
-    //       POPUP CREAR CARTA
-    // --------------------------
+
+    // Popup
     if (mostrarDialogo && fotoSeleccionada != null) {
 
-        AlertDialog(
+        AlertDialog(  // <- Popup
             onDismissRequest = { mostrarDialogo = false },
 
             title = { Text("Crear nueva carta") },
@@ -219,7 +248,7 @@ fun CameraScreen(
                 Column {
 
                     Image(
-                        bitmap = fotoSeleccionada!!.asImageBitmap(),
+                        bitmap = fotoSeleccionada!!.asImageBitmap(), //<- Muestra una vista previa de la imagen
                         contentDescription = null,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -256,6 +285,7 @@ fun CameraScreen(
                 }
             },
 
+            //Si se apreta el boton, se envia el formulario de más abajo.
             confirmButton = {
                 TextButton(onClick = {
 
@@ -271,7 +301,7 @@ fun CameraScreen(
                             usuarioId = usuarioId,
                             onSuccess = {
                                 mostrarDialogo = false
-                                Toast.makeText(context, "Carta creada!", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "La carta se creó exitosamente!", Toast.LENGTH_SHORT).show()
                             },
                             onError = {
                                 Toast.makeText(context, it, Toast.LENGTH_LONG).show()
@@ -283,7 +313,6 @@ fun CameraScreen(
                     Text("Crear")
                 }
             },
-
             dismissButton = {
                 TextButton(onClick = { mostrarDialogo = false }) {
                     Text("Cancelar")
@@ -296,23 +325,31 @@ fun CameraScreen(
 //Comboboxes
 @Composable
 fun DropdownMenuCarpetas(
-    carpetas: List<CarpetaApi>,
+    carpetas: List<CarpetaApi>,  //<- saca la lista de carpetas de la api para mostrarlas...
     carpetaSeleccionada: Long?,
     onSelect: (Long) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
 
+    val nombreSeleccionado = carpetas
+        .firstOrNull { it.id == carpetaSeleccionada }
+        ?.nombre_carpeta ?: "Seleccionar carpeta"
+
     Box {
+
         Button(onClick = { expanded = true }) {
-            Text(carpetaSeleccionada?.toString() ?: "Seleccionar carpeta")
+            Text(nombreSeleccionado)
         }
 
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
             carpetas.forEach { carpeta ->
                 DropdownMenuItem(
-                    text = { Text(carpeta.nombre_carpeta ?: "Sin nombre") },
+                    text = { Text(carpeta.nombre_carpeta ?: "Sin nombre") }, //<- Aqui. por el nombre
                     onClick = {
-                        onSelect(carpeta.id!!)
+                        onSelect(carpeta.id!!) //<- Se manda el id.
                         expanded = false
                     }
                 )
@@ -321,14 +358,15 @@ fun DropdownMenuCarpetas(
     }
 }
 
+
+//Hacemos algo similar aqui, solo que como eran solo dos categorias lo pusimos manual.
 @Composable
 fun DropdownMenuCategorias(
-    categoriaSeleccionada: Int?,   // ID de categoría seleccionado
+    categoriaSeleccionada: Int?,
     onSelect: (Int) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    // Lista de categorías con ID
     val categorias = listOf(
         1 to "Magic",
         2 to "Pokémon"

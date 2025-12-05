@@ -64,16 +64,15 @@ fun CartaItemGrid(carta: CartaApi) {
             .padding(5.dp)
     ) {
 
-        // Imagen si la carta tiene URL
         carta.imagen_url?.let { url ->
             AsyncImage(
-                model = carta.imagen_url,  // tu URL
+                model = carta.imagen_url,
                 contentDescription = carta.nombre_carta,
                 modifier = Modifier
-                    .fillMaxWidth()     // ancho controlado por la grilla
-                    .wrapContentHeight() // altura depende del ratio REAL de la imagen
+                    .fillMaxWidth()
+                    .wrapContentHeight()
                     .clip(RoundedCornerShape(12.dp)),
-                contentScale = ContentScale.FillWidth // respeta proporción original
+                contentScale = ContentScale.FillWidth
             )
 
 
