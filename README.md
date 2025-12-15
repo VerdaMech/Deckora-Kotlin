@@ -1,35 +1,35 @@
-📱 Deckora
+Deckora
 
 Deckora es una aplicación móvil que permite a los usuarios gestionar y organizar cartas TCG dentro de carpetas personalizadas.
 
-🔄 Flujo de la aplicación
+Flujo de la aplicación
 
-El usuario ingresa a la pantalla de perfil
+-El usuario ingresa a la pantalla de perfil
 
-Inicia sesión o crea una cuenta
+-Inicia sesión o crea una cuenta
 
-Accede a Carpetas y crea una carpeta
+-Accede a Carpetas y crea una carpeta
 
-Registra una carta TCG subiendo una imagen desde la galería o la cámara
+-Registra una carta TCG subiendo una imagen desde la galería o la cámara
 
-Guarda la carta dentro de una carpeta
+-Guarda la carta dentro de una carpeta
 
-Puede revisar:
+-Puede revisar:
 
-Sus cartas dentro de las carpetas
+  Sus cartas dentro de las carpetas
 
-Las cartas más destacadas en el Home
+  Las cartas más destacadas en el Home
 
-🧪 API – Swagger
+API – Swagger
 
 La documentación de la API está disponible en:
 
-🔗 https://deckora-api-kotlin-z6za.onrender.com/doc/swagger-ui/index.html
+https://deckora-api-kotlin-z6za.onrender.com/doc/swagger-ui/index.html
 
-👥 Equipo
+Equipo
 
 Deckora fue desarrollado por:
 
-Anais Palma
+-Anais Palma
 
-Vicente Verdaguer
+-Vicente Verdaguer
