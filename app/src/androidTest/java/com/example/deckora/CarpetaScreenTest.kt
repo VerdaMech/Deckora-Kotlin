@@ -1,66 +1,53 @@
 package com.example.deckora
-
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasScrollAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToNode
 import androidx.navigation.compose.rememberNavController
-import com.example.deckora.ui.screens.CameraScreen
-import com.example.deckora.viewmodel.CartaViewModel
+import com.example.deckora.ui.screens.CarpetaScreen
+import com.example.deckora.ui.screens.HomeScreen
+import com.example.deckora.viewmodel.CarpetaViewModel
 import com.example.deckora.viewmodel.MainViewModel
 import com.example.deckora.viewmodel.ResumenViewModel
 import com.example.deckora.viewmodel.UsuarioViewModel
 import org.junit.Rule
 import org.junit.Test
 
-class CameraScreenTest {
+class CarpetaScreenTest {
 
     @get:Rule
     val composeTestRule = createComposeRule()
 
     private val dummyMainViewModel = MainViewModel()
-
-    private val dummyCartaViewModel = CartaViewModel()
-
     private val dummyResumenViewModel = ResumenViewModel()
-
     private val dummyUsuarioViewModel = UsuarioViewModel()
+    private val dummyCarpetaViewModel = CarpetaViewModel()
 
 
     @Test
-    fun testVistaCameraScreen() {
+    fun testVistaCarpetaScreen() {
 
         composeTestRule.setContent {
             val navController = rememberNavController()
 
-            CameraScreen(
+            CarpetaScreen(
                 navController = navController,
                 viewModel = dummyMainViewModel,
                 usuarioViewModel = dummyUsuarioViewModel,
-                cartaViewModel = dummyCartaViewModel,
                 resumenViewModel = dummyResumenViewModel,
-                isTest = true
+                carpetaViewModel = dummyCarpetaViewModel
             )
         }
 
-        // ----------- Texto principal -----------
-        composeTestRule.onNodeWithText("Subir una foto")
+        // ----------- Título principal -----------
+        composeTestRule.onNodeWithText("Mis carpetas")
             .assertIsDisplayed()
-
-        composeTestRule.onNodeWithText("¡Agrega una nueva carta!")
-            .assertIsDisplayed()
-
-        // ----------- Botón -----------
-        composeTestRule.onNodeWithText("Galería")
-            .assertIsDisplayed()
-
-        composeTestRule.onNodeWithText("Galería")
-            .performClick()
-
-        composeTestRule.onNodeWithText("Tomar Foto")
-            .assertIsDisplayed()
-
-        composeTestRule.onNodeWithText("Tomar Foto")
+        //
+        composeTestRule.onNodeWithContentDescription("Crear carpeta")
             .performClick()
 
         // ----------- Barra inferior -----------
@@ -87,6 +74,5 @@ class CameraScreenTest {
 
         composeTestRule.onNodeWithText("Carpetas")
             .performClick()
-
     }
 }

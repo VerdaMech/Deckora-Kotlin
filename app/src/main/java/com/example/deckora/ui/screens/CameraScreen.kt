@@ -87,61 +87,63 @@ fun CameraScreen(
     isTest: Boolean = false
 ) {
 
+
+    val context = LocalContext.current
+    //Necesario para el resumen
+    val usuarioId = usuarioViewModel.estado.collectAsState().value.id
+    val carpetas = resumenViewModel.carpetasUsuario.collectAsState()
+
+    // Necesarios para crear la carta en si
+    var fotoSeleccionada by remember { mutableStateOf<Bitmap?>(null) }
+    var nombre by remember { mutableStateOf("") }
+    var estado by remember { mutableStateOf("") }
+    var descripcion by remember { mutableStateOf("") }
+    var carpetaSeleccionada by remember { mutableStateOf<Long?>(null) }
+    var categoriaSeleccionada by remember { mutableStateOf(1) } // Magic default
+
+    //Estado para el popup de crear carta
+    var mostrarDialogo by remember { mutableStateOf(false) }
+
+    // Cargar carpetas por el usuario id
     if (!isTest) {
-        val context = LocalContext.current
-        //Necesario para el resumen
-        val usuarioId = usuarioViewModel.estado.collectAsState().value.id
-        val carpetas = resumenViewModel.carpetasUsuario.collectAsState()
-
-        // Necesarios para crear la carta en si
-        var fotoSeleccionada by remember { mutableStateOf<Bitmap?>(null) }
-        var nombre by remember { mutableStateOf("") }
-        var estado by remember { mutableStateOf("") }
-        var descripcion by remember { mutableStateOf("") }
-        var carpetaSeleccionada by remember { mutableStateOf<Long?>(null) }
-        var categoriaSeleccionada by remember { mutableStateOf(1) } // Magic default
-
-        //Estado para el popup de crear carta
-        var mostrarDialogo by remember { mutableStateOf(false) }
-
-        // Cargar carpetas por el usuario id
         LaunchedEffect(usuarioId) {
             usuarioId?.let { resumenViewModel.cargarCarpetasUsuario(it) }
         }
+    }
 
-// Launcher de galeria
-        val selectImageLauncher = rememberLauncherForActivityResult(
-            ActivityResultContracts.GetContent()
-        ) { uri ->
+
+    // Launcher de galeria
+    val selectImageLauncher = if (!isTest) {
+        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             if (uri != null) {
                 val source = ImageDecoder.createSource(context.contentResolver, uri)
                 val bmp = ImageDecoder.decodeBitmap(source)
-
                 fotoSeleccionada = bmp
                 mostrarDialogo = true
             }
         }
+    } else null
 
-// Launcher camara
-        val takePictureLauncher = rememberLauncherForActivityResult(
-            ActivityResultContracts.TakePicturePreview()
-        ) { bmp ->
+
+    // Launcher camara
+    val takePictureLauncher = if (!isTest) {
+        rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) { bmp ->
             if (bmp != null) {
                 fotoSeleccionada = bmp
                 mostrarDialogo = true
             }
         }
+    } else null
 
-        val permissionsLauncher = rememberLauncherForActivityResult(
-            ActivityResultContracts.RequestPermission()
-        ) { granted ->
-            if (granted) {
-                takePictureLauncher.launch(null)
-            } else {
-                Toast.makeText(context, "Se necesita permiso de cámara", Toast.LENGTH_SHORT).show()  //<- Esto pasa si nohay permiso
+
+    val permissionsLauncher =
+        if (!isTest) {
+            rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+                if (granted) takePictureLauncher?.launch(null)
             }
-        }
-    }
+        } else null
+
+
 
 
     //NAvbar
@@ -171,7 +173,7 @@ fun CameraScreen(
             }
         }
     ) { padding ->
-    //Pagina
+        //Pagina
         Column(
             modifier = Modifier
                 .padding(padding)
@@ -208,7 +210,8 @@ fun CameraScreen(
             ) {
 
                 Button(
-                    onClick = { selectImageLauncher.launch("image/*") },
+                    onClick = {
+                        if (!isTest) selectImageLauncher?.launch("image/*")},
                     modifier = Modifier
                         .weight(1f)
                         .padding(end = 8.dp)
@@ -218,23 +221,22 @@ fun CameraScreen(
 
                 Button(
                     onClick = {
-                        val permission = ContextCompat.checkSelfPermission(
-                            context,
-                            Manifest.permission.CAMERA
-                        )
-
-                        if (permission == PackageManager.PERMISSION_GRANTED) {
-                            takePictureLauncher.launch(null)
-                        } else {
-                            permissionsLauncher.launch(Manifest.permission.CAMERA)
+                        if (!isTest) {
+                            val permission = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
+                            if (permission == PackageManager.PERMISSION_GRANTED) {
+                                takePictureLauncher?.launch(null)
+                            } else {
+                                permissionsLauncher?.launch(Manifest.permission.CAMERA)
+                            }
                         }
                     },
                     modifier = Modifier
                         .weight(1f)
-                        .padding(start = 8.dp)
+                        .padding(end = 8.dp)
                 ) {
                     Text("Tomar Foto")
                 }
+
             }
         }
     }
@@ -401,6 +403,7 @@ fun DropdownMenuCategorias(
         }
     }
 }
+
 
 
 
